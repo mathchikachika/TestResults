@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+pydantic
+motor
+beanie
+python-dotenv
+cryptocode
+python-jose
+passlib
+bcrypt
