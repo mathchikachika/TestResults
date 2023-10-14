@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Request, Depends, status, HTTPException, Body, Query
 from typing import Any, Annotated
+import math
 from server.authentication.jwt_bearer import JWTBearer
 from server.models.utilities import sample_payloads, model_parser
+from server.connection.database import db
 from server.models.question import (
     Question,
     StaarQuestion,
@@ -20,12 +22,12 @@ router = APIRouter()
             status_code=status.HTTP_201_CREATED,
             response_description="Fetch all questions from the database with pagination"
             )
-async def get_all_questions(question_status: str = "Pending",
+async def get_all_questions(question_status:  Annotated[list[str] | None, Query()] = None,
                             question_type: Annotated[list[str] | None, Query()] = None,
                             response_type: Annotated[list[str] | None, Query()] = None,
                             keywords: Annotated[list[str] | None, Query()] = None,
                             grade_level: Annotated[list[str] | None, Query()] = None,
-                            release_date: str | None = None,
+                            release_date: Annotated[list[str] | None, Query()] = None,
                             category: Annotated[list[str] | None, Query()] = None,
                             student_expectations: Annotated[list[str] | None, Query()] = None,
                             subject: Annotated[list[str] | None, Query()] = None,
@@ -36,7 +38,30 @@ async def get_all_questions(question_status: str = "Pending",
                             test_code: Annotated[list[str] | None, Query()] = None,
                             page_num: int = 1,
                             page_size: int = 10):
-        pass
+        arguments = locals()
+        pagination_filter = {}
+        query = {"$and": []}
+        for k, v in arguments.items():
+            if v is not None:
+                if (k =='page_num' or k == 'page_size'):
+                    continue
+                query['$and'].append({k: {"$in": v}})
+                pagination_filter[k] = v
+
+        questions = await db['question_collection'].find(query).sort('updated_at', -1).skip((page_num - 1) * page_size).limit(page_size).to_list(1000)
+        total_count = await db['question_collection'].count_documents({})
+        questions = model_parser.parse_response(questions)
+
+        response = {
+            "data": questions,
+            "count": len(questions),
+            "total": total_count,
+            "page": page_num,
+            "no_of_pages": math.ceil(total_count/page_size),
+            "pagination_filter": pagination_filter
+        }
+
+        return response
 
 ###############################
 # get question by id endpoint #
@@ -48,7 +73,22 @@ async def get_all_questions(question_status: str = "Pending",
             response_description="Fetch specific question by id from the database"
             )
 async def get_question_by_id(question_id: str):
-        pass
+        try:
+            fetched_question = await Question.get(question_id)
+
+            if fetched_question:
+                return {"question": fetched_question}
+
+            raise HTTPException(status.HTTP_404_NOT_FOUND,
+                                detail="Question not found") 
+        
+        except Exception as e:
+            if str(e) == '404':
+                raise HTTPException(status.HTTP_404_NOT_FOUND,
+                                detail="username or password is incorrect")
+            
+            raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR,
+                                detail="An error occured: " + str(e)) 
 
 ############################
 # create question endpoint #

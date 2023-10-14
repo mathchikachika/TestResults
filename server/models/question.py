@@ -29,6 +29,10 @@ class Question(Document):
     created_by: Optional[str] = None
     updated_at: Optional[datetime] = None
 
+    @validator('updated_at', pre=True, always=True)
+    def set_updated_at_now(v):
+        return v or datetime.utcnow()
+
     class Settings:
         name = "question_collection"
 
@@ -39,13 +43,7 @@ class StaarQuestion(Question):
     category: str
     student_expectations: List[str]
     keywords: List[str]
-    
     _validate_fields = model_validator(mode='before')(validate_staar_fields)
-
-    @validator('updated_at', pre=True, always=True)
-    def set_updated_at_now(v):
-        return v or datetime.utcnow()
-
 
 
 class CollegeQuestion(Question):
@@ -54,11 +52,6 @@ class CollegeQuestion(Question):
     test_code: str
     keywords: List[str]
     _validate_fields =model_validator(mode='before')(validate_college_fields)
-
-    @validator('updated_at', pre=True, always=True)
-    def set_updated_at_now(v):
-        return v or datetime.utcnow()
-
 
 
 class MathworldQuestion(Question):
@@ -71,13 +64,25 @@ class MathworldQuestion(Question):
     student_expectations: List[str]
     keywords: List[str]
     difficulty: str
-    points: int = Field(..., description="Published year must be a 4-digit number between 1000 and 9999"
-)
+    points: int
     _validate_fields =model_validator(mode='before')(validate_mathworld_fields)
 
-    @validator('updated_at', pre=True, always=True)
-    def set_updated_at_now(v):
-        return v or datetime.utcnow()
+class SearchQuestion(Question):
+    question_type: str = None
+    release_date: str = None
+    grade_level: int = None
+    teks_code: str = None
+    subject: str = None
+    topic: str = None
+    category: str = None
+    student_expectations: List[str] = None
+    keywords: List[str] = None
+    difficulty: str = None
+    points: int = None
+    classification: str = None
+    test_code: str = None
+
+
 
 
 
