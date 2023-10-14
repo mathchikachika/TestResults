@@ -25,12 +25,21 @@ class Question(Document):
     response_type: str
     question_content: str
     question_img: Optional[str]
+    status: str = 'Pending'
     options: List[Option]
     created_by: Optional[str] = None
+    created_at: Optional[datetime] = None
+    updated_by: Optional[str] = None
     updated_at: Optional[datetime] = None
+    reviewed_by: Optional[str] = None
+    reviewed_at: Optional[datetime] = None
 
     @validator('updated_at', pre=True, always=True)
     def set_updated_at_now(v):
+        return v or datetime.utcnow()
+    
+    @validator('created_at', pre=True, always=True)
+    def set_created_at_now(v):
         return v or datetime.utcnow()
 
     class Settings:
