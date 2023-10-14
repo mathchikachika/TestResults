@@ -154,6 +154,21 @@ async def update_question(request: Request,
             
             raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR,
                                 detail="An error occured: " + str(e)) 
+
+###################################
+# update question status endpoint #
+###################################
+
+@router.patch("/update/question_status/{question_id}", dependencies=[Depends(JWTBearer(access_level='staff'))], status_code=status.HTTP_200_OK)
+async def update_question_status(question_id: str,
+                                 request: Request):
+    # updates.reviewed_by = request.state.user_details['name']
+    # question = question_controller_v2.update_question_status(
+    #     connection.engine, question_id, updates)
+    # question_controller_v2.add_activity(connection, updates.status.capitalize(),
+    #                                     question, request, updates.update_note)
+    # return {"data": question}
+    pass
         
 
 
