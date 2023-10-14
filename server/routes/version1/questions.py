@@ -38,30 +38,34 @@ async def get_all_questions(question_status:  Annotated[list[str] | None, Query(
                             test_code: Annotated[list[str] | None, Query()] = None,
                             page_num: int = 1,
                             page_size: int = 10):
-        arguments = locals()
-        pagination_filter = {}
-        query = {"$and": []}
-        for k, v in arguments.items():
-            if v is not None:
-                if (k =='page_num' or k == 'page_size'):
-                    continue
-                query['$and'].append({k: {"$in": v}})
-                pagination_filter[k] = v
+        try: 
+            arguments = locals()
+            pagination_filter = {}
+            query = {"$and": []}
+            for k, v in arguments.items():
+                if v is not None:
+                    if (k =='page_num' or k == 'page_size'):
+                        continue
+                    query['$and'].append({k: {"$in": v}})
+                    pagination_filter[k] = v
 
-        questions = await db['question_collection'].find(query).sort('updated_at', -1).skip((page_num - 1) * page_size).limit(page_size).to_list(1000)
-        total_count = await db['question_collection'].count_documents({})
-        questions = model_parser.parse_response(questions)
+            questions = await db['question_collection'].find(query).sort('updated_at', -1).skip((page_num - 1) * page_size).limit(page_size).to_list(1000)
+            total_count = await db['question_collection'].count_documents({})
+            questions = model_parser.parse_response(questions)
 
-        response = {
-            "data": questions,
-            "count": len(questions),
-            "total": total_count,
-            "page": page_num,
-            "no_of_pages": math.ceil(total_count/page_size),
-            "pagination_filter": pagination_filter
-        }
+            response = {
+                "data": questions,
+                "count": len(questions),
+                "total": total_count,
+                "page": page_num,
+                "no_of_pages": math.ceil(total_count/page_size),
+                "pagination_filter": pagination_filter
+            }
 
-        return response
+            return response
+        except Exception as e:
+            raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR,
+                                detail="An error occured: " + str(e)) 
 
 ###############################
 # get question by id endpoint #
