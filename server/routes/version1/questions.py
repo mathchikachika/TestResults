@@ -39,6 +39,9 @@ async def get_all_questions(question_status:  Annotated[list[str] | None, Query(
                             page_num: int = 1,
                             page_size: int = 10):
         try: 
+            # default status
+            question_status = ['Pending'] if question_status is None else question_status
+
             arguments = locals()
             pagination_filter = {}
             query = {"$and": []}
@@ -50,7 +53,7 @@ async def get_all_questions(question_status:  Annotated[list[str] | None, Query(
                     pagination_filter[k] = v
 
             questions = await db['question_collection'].find(query).sort('updated_at', -1).skip((page_num - 1) * page_size).limit(page_size).to_list(1000)
-            total_count = await db['question_collection'].count_documents({})
+            total_count = await db['question_collection'].count_documents(query)
             questions = model_parser.parse_response(questions)
 
             response = {

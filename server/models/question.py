@@ -25,7 +25,7 @@ class Question(Document):
     response_type: str
     question_content: str
     question_img: Optional[str]
-    status: str = 'Pending'
+    question_status: str = 'Pending'
     options: List[Option]
     created_by: Optional[str] = None
     created_at: Optional[datetime] = None
@@ -75,24 +75,6 @@ class MathworldQuestion(Question):
     difficulty: str
     points: int
     _validate_fields =model_validator(mode='before')(validate_mathworld_fields)
-
-class SearchQuestion(Question):
-    question_type: str = None
-    release_date: str = None
-    grade_level: int = None
-    teks_code: str = None
-    subject: str = None
-    topic: str = None
-    category: str = None
-    student_expectations: List[str] = None
-    keywords: List[str] = None
-    difficulty: str = None
-    points: int = None
-    classification: str = None
-    test_code: str = None
-
-
-
 
 
 class UpdatedStaarQuestion(StaarQuestion):

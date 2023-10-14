@@ -13,7 +13,7 @@ from server.models.question import (
 def question_parser(question):
     if question['question_type'].strip().upper() == 'STAAR':
         question = StaarQuestion.model_validate(question)
-    elif question['question_type'].strip().title() == 'College level':
+    elif question['question_type'].strip().title() == 'College Level':
         question = CollegeQuestion.model_validate(question)
     elif question['question_type'].strip().title() == 'Mathworld':
         question = MathworldQuestion.model_validate(question)
@@ -73,16 +73,15 @@ def generate_response_payload(result):
             question['response_type'] = res['response_type']
             question['question_content'] = res['question_content']
             question['question_img'] = res['question_img']
-            # question['status'] = res['status']
+            question['question_status'] = res['question_status']
             question['created_by'] = res['created_by']
-            # question['created_at'] = res['created_at']
-            # question['updated_by'] = res['updated_by']
+            question['created_at'] = res['created_at']
+            question['updated_by'] = res['updated_by']
             question['updated_at'] = res['updated_at']
-            # question['reviewed_by'] = res['reviewed_by']
-            # question['reviewed_at'] = res['reviewed_at']
+            question['reviewed_by'] = res['reviewed_by']
+            question['reviewed_at'] = res['reviewed_at']
             question['metadata'] = item
             question['options'] = res['options']
-            # question['metadata']['question_id'] = question['id']
         response_payload.append(question)
     return response_payload
 
