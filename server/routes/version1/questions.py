@@ -84,10 +84,10 @@ async def get_all_questions(question_status:  Annotated[list[str] | None, Query(
             )
 async def get_question_by_id(question_id: str):
         try:
-            fetched_question = await Question.get(question_id)
-
+            fetched_question = await db['question_collection'].find_one({"_id": ObjectId(question_id)})
             if fetched_question:
-                return {"question": fetched_question}
+                parsed_question = model_parser.parse_response([fetched_question])[0]
+                return {"question": parsed_question}
 
             raise HTTPException(status.HTTP_404_NOT_FOUND,
                                 detail="Question not found") 
