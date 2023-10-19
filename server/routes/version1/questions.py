@@ -30,7 +30,7 @@ async def get_all_questions(question_status:  Annotated[list[str] | None, Query(
                             question_type: Annotated[list[str] | None, Query()] = None,
                             response_type: Annotated[list[str] | None, Query()] = None,
                             keywords: Annotated[list[str] | None, Query()] = None,
-                            grade_level: Annotated[list[str] | None, Query()] = None,
+                            grade_level: Annotated[list[int] | None, Query()] = None,
                             release_date: Annotated[list[str] | None, Query()] = None,
                             category: Annotated[list[str] | None, Query()] = None,
                             student_expectations: Annotated[list[str] | None, Query()] = None,
