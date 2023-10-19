@@ -103,6 +103,24 @@ async def get_question_by_id(question_id: str):
                                     detail="Question not found")
         
             raise HTTPException(status.HTTP_400_BAD_REQUEST,
+                                    detail="An error occured: " + str(e))
+            
+            
+###########################
+# get question statistics #
+###########################
+
+@router.get("/statistics",
+            dependencies=[Depends(JWTBearer(access_level='staff'))],
+            status_code=status.HTTP_201_CREATED,
+            response_description="Fetch question statistics"
+            )
+async def get_question_statistics(request: Request):
+        try:
+            pass
+        
+        except Exception as e:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST,
                                     detail="An error occured: " + str(e)) 
 
 ############################
