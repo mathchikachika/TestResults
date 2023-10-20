@@ -13,6 +13,14 @@ router = APIRouter()
              response_description="Get all activities"
             )
 async def get_all_activities(request: Request, is_own: bool = False, question_id: str = None, page_num: int = 1, page_size: int = 10):
+        if(page_num <=0 ):
+                raise HTTPException(status.HTTP_400_BAD_REQUEST,
+                                    detail="Page number should not be equal or less than to 0")
+
+        if(page_size <= 0):
+            raise HTTPException(status.HTTP_400_BAD_REQUEST,
+                                    detail="Page size should not be equal or less than to 0")
+        
         try:
             query = {}
             
