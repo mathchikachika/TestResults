@@ -77,6 +77,43 @@ class Registration(Account):
             }
         }
 
+class UpdatedAccount(BaseModel):
+    first_name: str
+    middle_name: Optional[str] = None
+    last_name: str
+    role: str
+    email: str
+    updated_by: Optional[str] = None
+    updated_at: Optional[datetime] = None
+
+    @validator('updated_at', pre=True, always=True)
+    def set_updated_at_now(v):
+        return v or datetime.utcnow()
+    
+
+class UpdatedSubscriberAccount(UpdatedAccount):
+    school: str
+
+class UpdatedPassword(BaseModel):
+    old_password: str
+    new_password: str
+    repeat_new_password: str
+    updated_by: Optional[str] = None
+    updated_at: Optional[datetime] = None
+
+    @validator('updated_at', pre=True, always=True)
+    def set_updated_at_now(v):
+        return v or datetime.utcnow()
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "old_password": "Hello123!",
+                'new_password': "HiBro567!",
+                "repeat_new_password": "HiBro567!",
+            }
+        }
+
 class AccountResponseModel(BaseModel):
     id: PydanticObjectId = Field(alias='_id')
     first_name: str
