@@ -42,6 +42,13 @@ async def get_all_questions(question_status:  Annotated[list[str] | None, Query(
                             test_code: Annotated[list[str] | None, Query()] = None,
                             page_num: int = 1,
                             page_size: int = 10):
+        if(page_num <=0 ):
+                raise HTTPException(status.HTTP_400_BAD_REQUEST,
+                                    detail="Page number should not be equal or less than to 0")
+
+        if(page_size <= 0):
+            raise HTTPException(status.HTTP_400_BAD_REQUEST,
+                                    detail="Page size should not be equal or less than to 0")
         try: 
             # default status
             question_status = ['Pending'] if question_status is None else question_status
@@ -56,7 +63,7 @@ async def get_all_questions(question_status:  Annotated[list[str] | None, Query(
                     query['$and'].append({k: {"$in": v}})
                     pagination_filter[k] = v
 
-            questions = await db['question_collection'].find(query).sort('updated_at', -1).skip((page_num - 1) * page_size).limit(page_size).to_list(1000)
+            questions = await db['question_collection'].find(query).sort('updated_at', -1).skip((page_num - 1) * page_size).limit(page_size).to_list(None)
             total_count = await db['question_collection'].count_documents(query)
             questions = model_parser.parse_response(questions)
 
