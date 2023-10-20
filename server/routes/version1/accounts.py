@@ -155,3 +155,38 @@ async def get_user_data(request: Request, account_id: str = None):
 
     account = await Account.find({"_id":ObjectId(account_id) }).project(AccountResponseModel).to_list(None)
     return account
+
+@router.put("/update_details", dependencies=[Depends(JWTBearer(access_level='staff'))], status_code=status.HTTP_200_OK)
+async def get_user_data(request: Request, account_id: str = None):
+    if account_id:
+      sample = JWTBearer(access_level='admin')
+      await sample.__call__(request)
+    else:
+      account_id = request.state.user_details['uuid']
+
+    # account = await Account.find({"_id":ObjectId(account_id) }).project(AccountResponseModel).to_list(None)
+    # return account
+# return {"Successfully updated": result}
+
+@router.put("/change_password", dependencies=[Depends(JWTBearer(access_level='staff'))], status_code=status.HTTP_200_OK)
+async def get_user_data(request: Request, account_id: str = None):
+    if account_id:
+      sample = JWTBearer(access_level='admin')
+      await sample.__call__(request)
+    else:
+      account_id = request.state.user_details['uuid']
+
+    # account = await Account.find({"_id":ObjectId(account_id) }).project(AccountResponseModel).to_list(None)
+    # return account
+    #     return {"message": "Successfully change password"}
+
+@router.delete("/delete/{uuid}", dependencies=[Depends(JWTBearer(access_level='admin'))], status_code=status.HTTP_200_OK)
+async def change_password(uuid: str):
+    pass
+    # result = staff_controller.delete_account(
+    #     connection.engine, uuid)
+    # if(result):
+    #     return {"message": "Successfully deleted"}
+    # else:
+    #     raise HTTPException(status.HTTP_400_BAD_REQUEST,
+    #                         detail="Unsuccessful delete.")
