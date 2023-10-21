@@ -9,6 +9,8 @@ from server.models.question import (
     UpdatedMathworldQuestion
 )
 from server.models.account import (
+    Account,
+    SubscriberAccount,
     UpdatedAccount,
     UpdatedSubscriberAccount
 )
@@ -31,6 +33,13 @@ def updated_question_parser(question):
     elif question['question_type'].strip().title() == 'Mathworld':
         question = UpdatedMathworldQuestion.model_validate(question)
     return question
+
+def account_parser(account):
+    if account['role'].strip() == 'admin' or account['role'].strip() == 'staff':
+        created_account= Account.model_validate(account)
+    elif account['role'].strip() == 'subscriber':
+        created_account = SubscriberAccount.model_validate(account)
+    return created_account
 
 def updated_account_parser(account):
     if account['role'].strip() == 'admin' or account['role'].strip() == 'staff':

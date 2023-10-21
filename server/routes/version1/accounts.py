@@ -49,7 +49,9 @@ async def login(credentials: LogIn):
              status_code=status.HTTP_201_CREATED,
              response_description="Account created"
             )
-async def create_account(request: Request, account: Registration):
+async def create_account(request: Request,
+                        account: Any = Body(openapi_examples=sample_payloads.account_payload)):
+        account = model_parser.account_parser(account)
         try:
             account.created_by = request.state.user_details['name']
             if account.role != 'subscriber':
