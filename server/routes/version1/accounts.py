@@ -133,7 +133,7 @@ async def get_all_accounts(role: str = None, page_num: int = 1, page_size: int =
         total_count = await db['account_collection'].aggregate(pipeline).to_list(None)
         total_count_of_specific_role = total_count[0]['total_no_of_accounts']
         if role:
-            total_count_of_specific_role = total_count[0]['total_no_of_' + role]
+            total_count_of_specific_role = total_count[0]['no_of_' + role]
         response = {
             "data": accounts,
             "count": len(accounts),
