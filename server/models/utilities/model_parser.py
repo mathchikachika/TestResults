@@ -1,5 +1,6 @@
 from bson import ObjectId, datetime
 import json
+from fastapi import HTTPException, status
 from server.models.question import (
     StaarQuestion,
     CollegeQuestion,
@@ -17,12 +18,21 @@ from server.models.account import (
 
 
 def question_parser(question):
-    if question['question_type'].strip().upper() == 'STAAR':
+    question_type = question['question_type'].strip()
+    
+    if question_type.upper() == 'STAAR':
         question = StaarQuestion.model_validate(question)
-    elif question['question_type'].strip().title() == 'College Level':
+    elif question_type.title() == 'College Level':
         question = CollegeQuestion.model_validate(question)
-    elif question['question_type'].strip().title() == 'Mathworld':
+    elif question_type.title() == 'Mathworld':
         question = MathworldQuestion.model_validate(question)
+    else:
+        if question_type:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST,
+                                detail="invalid question type")
+        else:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST,
+                                detail="question_type is required")
     return question
 
 def updated_question_parser(question):
