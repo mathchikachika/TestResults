@@ -76,29 +76,29 @@ def test_specific_by_uuid_remove_minus(get_staff_token):
     assert_that(json_response['detail']).is_equal_to('Invalid token or expired token.')
     pass
     
-'''
-@pytest.mark.tc_004
-def test_specific_by_uuid_invalid(get_staff_token):
-    req = Requester()        
-    header: dict = req.create_basic_headers(token=get_staff_token)
-    sql_staff_info: list = execute_query(f"SELECT * FROM mathworld.staff LIMIT 1")
-    sql_uuid: str = re.sub(r'\d+', 'x', sql_staff_info[0][0])
+# '''
+# @pytest.mark.tc_004
+# def test_specific_by_uuid_invalid(get_staff_token):
+#     req = Requester()        
+#     header: dict = req.create_basic_headers(token=get_staff_token)
+#     sql_staff_info: list = execute_query(f"SELECT * FROM mathworld.staff LIMIT 1")
+#     sql_uuid: str = re.sub(r'\d+', 'x', sql_staff_info[0][0])
     
-    url = f"{req.base_url}/staff/specific/{sql_uuid}"        
-    response = requests.request("GET", url, headers=header)
-    json_response = json.loads(response.text)
-    assert_that(response.status_code).is_equal_to(400)
-    assert_that(json_response["detail"]).is_equal_to("invalid id")
+#     url = f"{req.base_url}/staff/specific/{sql_uuid}"        
+#     response = requests.request("GET", url, headers=header)
+#     json_response = json.loads(response.text)
+#     assert_that(response.status_code).is_equal_to(400)
+#     assert_that(json_response["detail"]).is_equal_to("invalid id")
     
-@pytest.mark.tc_005
-def test_specific_by_uuid_newly_created_staar_admin(get_staff_token):
-    req = Requester()        
-    header: dict = req.create_basic_headers(token=get_staff_token)
-    created_response: dict = common.create_a_staar_question('admin')
+# @pytest.mark.tc_005
+# def test_specific_by_uuid_newly_created_staar_admin(get_staff_token):
+#     req = Requester()        
+#     header: dict = req.create_basic_headers(token=get_staff_token)
+#     created_response: dict = common.create_a_staar_question('admin')
 
-    url = f"{req.base_url}/staff/specific/{created_response['question_uuid']}"        
-    response = requests.request("GET", url, headers=header)
-    json_response = json.loads(response.text)
-    assert_that(response.status_code).is_equal_to(404)
-    assert_that(json_response["detail"]).is_equal_to("Staff Not Found.")
-'''
+#     url = f"{req.base_url}/staff/specific/{created_response['question_uuid']}"        
+#     response = requests.request("GET", url, headers=header)
+#     json_response = json.loads(response.text)
+#     assert_that(response.status_code).is_equal_to(404)
+#     assert_that(json_response["detail"]).is_equal_to("Staff Not Found.")
+# '''

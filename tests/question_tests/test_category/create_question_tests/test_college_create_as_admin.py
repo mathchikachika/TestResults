@@ -23,132 +23,61 @@ def get_admin_token():
 def test_all_fields(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
-    # STAAR, College Level, Mathworld
-    payload = {'data': '{ \
+    payload = { \
         "question_type": "College Level", \
         "classification": "SAT", \
         "test_code": "123456", \
         "keywords": ["2"], \
         "response_type": "Open Response Exact", \
-        "question_content": "' + question1 + '", \
+        "question_content": question1, \
         "question_img": "", \
         "options": [ \
             { \
             "letter": "a", \
-            "content": "' + question2 + '", \
+            "content": question2, \
             "image": "", \
             "unit": "pound", \
-            "is_answer": true \
+            "is_answer": True \
             } \
         ] \
-        }'}
+        }
 
-    # upload_file: list = []  # blank list
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
-    response = requests.request("POST", url, headers=header, data=payload, files=upload_file)
+    response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 201
     assert json_response['detail'] == "Successfully Added Question"
-    assert common.is_valid_uuid(json_response['question_uuid']) == True
-
-@pytest.mark.tc_002
-def test_question_type_eq_STAAR(get_admin_token):
-    req = Requester()
-    header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
-
-    payload = {'data': '{ \
-        "question_type": "STAAR", \
-        "classification": "SAT", \
-        "test_code": "123456", \
-        "keywords": ["2"], \
-        "response_type": "Open Response Exact", \
-        "question_content": "' + question1 + '", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "' + question2 + '", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
-
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
-    response = requests.request("POST", url, headers=header, data=payload, files=upload_file)
-    json_response = json.loads(response.text)
-    assert response.status_code == 400
-    assert json_response['detail'] == "question type must match to the endpoint use: College Level"
-
-@pytest.mark.tc_003
-def test_question_type_eq_Mathworld(get_admin_token):
-    req = Requester()
-    header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
-
-    payload = {'data': '{ \
-        "question_type": "Mathworld", \
-        "classification": "SAT", \
-        "test_code": "123456", \
-        "keywords": ["2"], \
-        "response_type": "Open Response Exact", \
-        "question_content": "' + question1 + '", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "' + question2 + '", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
-
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
-    response = requests.request("POST", url, headers=header, data=payload, files=upload_file)
-    json_response = json.loads(response.text)
-    assert response.status_code == 400
-    assert json_response['detail'] == "question type must match to the endpoint use: College Level"
 
 @pytest.mark.tc_004
 def test_question_type_eq_Blank(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
-    payload = {'data': '{ \
+    payload ={ \
         "question_type": "", \
         "classification": "SAT", \
         "test_code": "123456", \
         "keywords": ["2"], \
         "response_type": "Open Response Exact", \
-        "question_content": "' + question1 + '", \
+        "question_content": question1, \
         "question_img": "", \
         "options": [ \
             { \
             "letter": "a", \
-            "content": "' + question2 + '", \
+            "content": question2, \
             "image": "", \
             "unit": "pound", \
-            "is_answer": true \
+            "is_answer": True \
             } \
         ] \
-        }'}
+        }
 
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
-    response = requests.request("POST", url, headers=header, data=payload, files=upload_file)
+    response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == "question_type is required"
@@ -157,7 +86,7 @@ def test_question_type_eq_Blank(get_admin_token):
 def test_question_type_college_level_with_whitespace(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -191,7 +120,7 @@ def test_question_type_college_level_with_whitespace(get_admin_token):
 def test_question_type_numeric(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -224,7 +153,7 @@ def test_question_type_numeric(get_admin_token):
 def test_question_type_special_char(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -257,7 +186,7 @@ def test_question_type_special_char(get_admin_token):
 def test_classification_numeric(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -290,7 +219,7 @@ def test_classification_numeric(get_admin_token):
 def test_classification_type_blank_char(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -323,7 +252,7 @@ def test_classification_type_blank_char(get_admin_token):
 def test_classification_type_TSI(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -357,7 +286,7 @@ def test_classification_type_TSI(get_admin_token):
 def test_classification_type_ACT(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -391,7 +320,7 @@ def test_classification_type_ACT(get_admin_token):
 def test_classification_type_ACT_with_whitespace(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -425,7 +354,7 @@ def test_classification_type_ACT_with_whitespace(get_admin_token):
 def test_classification_type_invalid_special_symbol(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -458,7 +387,7 @@ def test_classification_type_invalid_special_symbol(get_admin_token):
 def test_classification_blank(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -491,7 +420,7 @@ def test_classification_blank(get_admin_token):
 def test_classification_eq_neg_5(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -524,7 +453,7 @@ def test_classification_eq_neg_5(get_admin_token):
 def test_classification_eq_neg_15(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -557,7 +486,7 @@ def test_classification_eq_neg_15(get_admin_token):
 def test_classification_invalid_char(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -590,7 +519,7 @@ def test_classification_invalid_char(get_admin_token):
 def test_add_2_types_of_classifications(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -623,7 +552,7 @@ def test_add_2_types_of_classifications(get_admin_token):
 def test_add_2_SAT_with_whitespace(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -657,7 +586,7 @@ def test_add_2_SAT_with_whitespace(get_admin_token):
 def test_add_2_TSI_with_whitespace(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -691,7 +620,7 @@ def test_add_2_TSI_with_whitespace(get_admin_token):
 def test_add_2_ACT_with_whitespace(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -725,7 +654,7 @@ def test_add_2_ACT_with_whitespace(get_admin_token):
 def test_classification_malformed(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -758,7 +687,7 @@ def test_classification_malformed(get_admin_token):
 def test_classification_type_college_level(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -791,7 +720,7 @@ def test_classification_type_college_level(get_admin_token):
 def test_classification_type_STAAR(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -824,7 +753,7 @@ def test_classification_type_STAAR(get_admin_token):
 def test_classification_type_Mathworld(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -857,7 +786,7 @@ def test_classification_type_Mathworld(get_admin_token):
 def test_test_code_whitespace(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -890,7 +819,7 @@ def test_test_code_whitespace(get_admin_token):
 def test_test_code_neg_123456(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -923,7 +852,7 @@ def test_test_code_neg_123456(get_admin_token):
 def test_test_code_special_char(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -958,7 +887,7 @@ def test_test_code_special_char(get_admin_token):
 def test_test_code_type_a(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -993,7 +922,7 @@ def test_test_code_type_a(get_admin_token):
 def test_test_code_type_alpha_numeric(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -1028,7 +957,7 @@ def test_test_code_type_alpha_numeric(get_admin_token):
 def test_test_code_type_blank(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -1063,7 +992,7 @@ def test_test_code_type_blank(get_admin_token):
 def test_test_code_str_0(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -1098,7 +1027,7 @@ def test_test_code_str_0(get_admin_token):
 def test_test_code_type_neg_5(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -1132,7 +1061,7 @@ def test_test_code_type_neg_5(get_admin_token):
 def test_test_code_special_char(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -1166,7 +1095,7 @@ def test_test_code_special_char(get_admin_token):
 def test_test_code_empty(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -1200,7 +1129,7 @@ def test_test_code_empty(get_admin_token):
 def test_keywords_str_55(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -1236,7 +1165,7 @@ def test_keywords_str_55(get_admin_token):
 def test_keywords_str_neg_123(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -1271,7 +1200,7 @@ def test_keywords_str_neg_123(get_admin_token):
 def test_keywords_str_abc(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -1306,7 +1235,7 @@ def test_keywords_str_abc(get_admin_token):
 def test_keywords_list_strings(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -1341,7 +1270,7 @@ def test_keywords_list_strings(get_admin_token):
 def test_keywords_list_alpha_num(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -1375,7 +1304,7 @@ def test_keywords_list_alpha_num(get_admin_token):
 def test_keywords_empty_list(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -1409,7 +1338,7 @@ def test_keywords_empty_list(get_admin_token):
 def test_keywords_missing(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -1442,7 +1371,7 @@ def test_keywords_missing(get_admin_token):
 def test_keywords_all_num(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -1476,7 +1405,7 @@ def test_keywords_all_num(get_admin_token):
 def test_keywords_blank_entry(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -1510,7 +1439,7 @@ def test_keywords_blank_entry(get_admin_token):
 def test_keywords_long_value(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -1543,7 +1472,7 @@ def test_keywords_long_value(get_admin_token):
 def test_keywords_list_60_value(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -1585,7 +1514,7 @@ def test_keywords_list_60_value(get_admin_token):
 def test_response_type_blank(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -1619,7 +1548,7 @@ def test_response_type_blank(get_admin_token):
 def test_response_type_blank_char(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -1653,7 +1582,7 @@ def test_response_type_blank_char(get_admin_token):
 def test_response_type_not_ore(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -1686,7 +1615,7 @@ def test_response_type_not_ore(get_admin_token):
 def test_response_type_is_ore(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -1721,7 +1650,7 @@ def test_response_type_is_ore(get_admin_token):
 def test_response_type_is_ror(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -1758,7 +1687,7 @@ def test_response_type_is_ror(get_admin_token):
 def test_response_type_not_ror(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -1792,7 +1721,7 @@ def test_response_type_not_ror(get_admin_token):
 def test_response_type_mc(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -1827,7 +1756,7 @@ def test_response_type_mc(get_admin_token):
 def test_response_type_not_mc(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -1861,7 +1790,7 @@ def test_response_type_not_mc(get_admin_token):
 def test_response_type_cb(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -1896,7 +1825,7 @@ def test_response_type_cb(get_admin_token):
 def test_response_type_not_cb(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -1930,7 +1859,7 @@ def test_response_type_not_cb(get_admin_token):
 def test_response_type_numeric(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -1964,7 +1893,7 @@ def test_response_type_numeric(get_admin_token):
 def test_response_type_spec_char(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -1998,7 +1927,7 @@ def test_response_type_spec_char(get_admin_token):
 def test_question_content(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -2033,7 +1962,7 @@ def test_question_content(get_admin_token):
 def test_question_content_blank(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -2067,7 +1996,7 @@ def test_question_content_blank(get_admin_token):
 def test_question_content_missing(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -2101,7 +2030,7 @@ def test_question_content_missing(get_admin_token):
 def test_question_content_lines_10(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
@@ -2144,7 +2073,7 @@ def test_question_content_lines_10(get_admin_token):
 def test_question_content_1000_char(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
     char_limit: str = common.get_random_char(1000)
@@ -2179,7 +2108,7 @@ def test_question_content_1000_char(get_admin_token):
 def test_question_content_999_char(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
     char_limit: str = common.get_random_char(999)
@@ -2214,7 +2143,7 @@ def test_question_content_999_char(get_admin_token):
 def test_question_content_1001_char(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
     char_limit: str = common.get_random_char(1001)
@@ -2248,7 +2177,7 @@ def test_question_content_1001_char(get_admin_token):
 def test_question_content_blank_chars(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
     payload = {'data': '{ \
@@ -2281,7 +2210,7 @@ def test_question_content_blank_chars(get_admin_token):
 def test_question_content_content_numeric(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
     payload = {'data': '{ \
@@ -2314,7 +2243,7 @@ def test_question_content_content_numeric(get_admin_token):
 def test_question_content_spec_char(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
     payload = {'data': '{ \
@@ -2348,7 +2277,7 @@ def test_question_content_spec_char(get_admin_token):
 def test_question_img(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
     question_img: str = f"{CURRENT_DIR}\\tests\\images\\image_01.jpg"
@@ -2382,7 +2311,7 @@ def test_question_img(get_admin_token):
 def test_question_img(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/question/college/create"
+    url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
     question_img: str = f"{CURRENT_DIR}\\tests\\images\\image_01.jpg"
