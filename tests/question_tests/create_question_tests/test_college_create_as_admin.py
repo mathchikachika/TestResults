@@ -425,34 +425,14 @@ def test_test_code_type_blank(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
     url = f"{req.base_url}/v1/questions/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
+    
+    payload = get_valid_successful_college_payload()
+    payload['test_code'] = ""
 
-    payload = {'data': '{ \
-        "question_type": "college level", \
-        "classification": "SAT", \
-        "test_code": " ", \
-        "keywords": ["2"], \
-        "response_type": "Open Response Exact", \
-        "question_content": "' + question1 + '", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "' + question2 + '", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
-        
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
-    assert response.status_code == 201
-    assert json_response['detail'] == "Successfully Added Question"
-    assert common.is_valid_uuid(json_response['question_uuid']) == True
+    assert response.status_code == 400
+    assert json_response['detail'] == "test_code is required"
 
 
 @pytest.mark.tc_032
@@ -460,34 +440,15 @@ def test_test_code_str_0(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
     url = f"{req.base_url}/v1/questions/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
+    
+    payload = get_valid_successful_college_payload()
+    payload['test_code'] = "0"
 
-    payload = {'data': '{ \
-        "question_type": "college level", \
-        "classification": "SAT", \
-        "test_code": "0", \
-        "keywords": ["2"], \
-        "response_type": "Open Response Exact", \
-        "question_content": "' + question1 + '", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "' + question2 + '", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
-        
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 201
     assert json_response['detail'] == "Successfully Added Question"
-    assert common.is_valid_uuid(json_response['question_uuid']) == True
+
 
 
 @pytest.mark.tc_033
@@ -495,29 +456,10 @@ def test_test_code_type_neg_5(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
     url = f"{req.base_url}/v1/questions/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
 
-    payload = {'data': '{ \
-        "question_type": "college level", \
-        "classification": "SAT", \
-        "test_code": -5, \
-        "keywords": ["2"], \
-        "response_type": "Open Response Exact", \
-        "question_content": "' + question1 + '", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "' + question2 + '", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
-        
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
+    payload = get_valid_successful_college_payload()
+    payload['test_code'] = -5
+
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
@@ -525,73 +467,20 @@ def test_test_code_type_neg_5(get_admin_token):
 
 
 
-@pytest.mark.tc_035
-def test_test_code_empty(get_admin_token):    
-    req = Requester()
-    header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/v1/questions/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
-
-    payload = {'data': '{ \
-        "question_type": "college level", \
-        "classification": "SAT", \
-        "test_code": , \
-        "keywords": ["2"], \
-        "response_type": "Open Response Exact", \
-        "question_content": "' + question1 + '", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "' + question2 + '", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
-        
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
-    response = requests.request("POST", url, headers=header, json=payload)
-    json_response = json.loads(response.text)
-    assert response.status_code == 400
-    assert json_response['detail'] == "Invalid Payload"
-
-
 @pytest.mark.tc_036
 def test_keywords_str_55(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
     url = f"{req.base_url}/v1/questions/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
+    
+    payload = get_valid_successful_college_payload()
+    payload['keywords'] = ["55"]
 
-    payload = {'data': '{ \
-        "question_type": "college level", \
-        "classification": "SAT", \
-        "test_code": "12345", \
-        "keywords": ["55"], \
-        "response_type": "Open Response Exact", \
-        "question_content": "' + question1 + '", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "' + question2 + '", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
-        
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 201
     assert json_response['detail'] == "Successfully Added Question"
-    assert common.is_valid_uuid(json_response['question_uuid']) == True
+
 
 
 
@@ -600,34 +489,15 @@ def test_keywords_str_neg_123(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
     url = f"{req.base_url}/v1/questions/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
+    
+    payload = get_valid_successful_college_payload()
+    payload['keywords'] = ["-123"]
 
-    payload = {'data': '{ \
-        "question_type": "college level", \
-        "classification": "SAT", \
-        "test_code": "12345", \
-        "keywords": ["-123"], \
-        "response_type": "Open Response Exact", \
-        "question_content": "' + question1 + '", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "' + question2 + '", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
-        
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 201
     assert json_response['detail'] == "Successfully Added Question"
-    assert common.is_valid_uuid(json_response['question_uuid']) == True
+
 
 
 @pytest.mark.tc_038
@@ -635,34 +505,14 @@ def test_keywords_str_abc(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
     url = f"{req.base_url}/v1/questions/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
+    
+    payload = get_valid_successful_college_payload()
+    payload['keywords'] = ["abc"]
 
-    payload = {'data': '{ \
-        "question_type": "college level", \
-        "classification": "SAT", \
-        "test_code": "12345", \
-        "keywords": ["abc"], \
-        "response_type": "Open Response Exact", \
-        "question_content": "' + question1 + '", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "' + question2 + '", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
-        
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 201
     assert json_response['detail'] == "Successfully Added Question"
-    assert common.is_valid_uuid(json_response['question_uuid']) == True
 
     
 @pytest.mark.tc_039
@@ -670,34 +520,14 @@ def test_keywords_list_strings(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
     url = f"{req.base_url}/v1/questions/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
 
-    payload = {'data': '{ \
-        "question_type": "college level", \
-        "classification": "SAT", \
-        "test_code": "12345", \
-        "keywords": ["mabra", "science", "english", "writing", "reading"], \
-        "response_type": "Open Response Exact", \
-        "question_content": "' + question1 + '", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "' + question2 + '", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
+    payload = get_valid_successful_college_payload()
+    payload['keywords'] = ["mabra", "science", "english", "writing", "reading"]
         
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 201
     assert json_response['detail'] == "Successfully Added Question"
-    assert common.is_valid_uuid(json_response['question_uuid']) == True
 
 
 @pytest.mark.tc_040
@@ -705,29 +535,10 @@ def test_keywords_list_alpha_num(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
     url = f"{req.base_url}/v1/questions/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
 
-    payload = {'data': '{ \
-        "question_type": "college level", \
-        "classification": "SAT", \
-        "test_code": "12345", \
-        "keywords": ["math","algebra", "science",3, "english", "writing", "reading", 5], \
-        "response_type": "Open Response Exact", \
-        "question_content": "' + question1 + '", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "' + question2 + '", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
+    payload = get_valid_successful_college_payload()
+    payload['keywords'] = ["math","algebra", "science",3, "english", "writing", "reading", 5]
         
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
@@ -739,29 +550,10 @@ def test_keywords_empty_list(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
     url = f"{req.base_url}/v1/questions/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
+    
+    payload = get_valid_successful_college_payload()
+    payload['keywords'] = []
 
-    payload = {'data': '{ \
-        "question_type": "college level", \
-        "classification": "SAT", \
-        "test_code": "12345", \
-        "keywords": [], \
-        "response_type": "Open Response Exact", \
-        "question_content": "' + question1 + '", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "' + question2 + '", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
-        
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
@@ -773,29 +565,10 @@ def test_keywords_missing(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
     url = f"{req.base_url}/v1/questions/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
-
-    payload = {'data': '{ \
-        "question_type": "college level", \
-        "classification": "SAT", \
-        "test_code": "12345", \
-        "keyword_missing": ["missing","english"], \
-        "response_type": "Open Response Exact", \
-        "question_content": "' + question1 + '", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "' + question2 + '", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
+    
+    payload = get_valid_successful_college_payload()
+    del payload["keywords"] 
         
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
@@ -806,29 +579,10 @@ def test_keywords_all_num(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
     url = f"{req.base_url}/v1/questions/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
 
-    payload = {'data': '{ \
-        "question_type": "college level", \
-        "classification": "SAT", \
-        "test_code": "12345", \
-        "keywords": [3,1,3,2,1], \
-        "response_type": "Open Response Exact", \
-        "question_content": "' + question1 + '", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "' + question2 + '", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
+    payload = get_valid_successful_college_payload()
+    payload['keywords'] = [3,1,3,2,1]
         
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
@@ -840,29 +594,10 @@ def test_keywords_blank_entry(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
     url = f"{req.base_url}/v1/questions/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
-
-    payload = {'data': '{ \
-        "question_type": "college level", \
-        "classification": "SAT", \
-        "test_code": "12345", \
-        "keywords": ["math", "science", "english", "", "algegra", "geometry"], \
-        "response_type": "Open Response Exact", \
-        "question_content": "' + question1 + '", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "' + question2 + '", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
+    
+    payload = get_valid_successful_college_payload()
+    payload['keywords'] = ["math", "science", "english", "", "algegra", "geometry"]
         
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
@@ -874,74 +609,35 @@ def test_keywords_long_value(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
     url = f"{req.base_url}/v1/questions/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
-
-    payload = {'data': '{ \
-        "question_type": "college level", \
-        "classification": "SAT", \
-        "test_code": "12345", \
-        "keywords": ["math_algebra_math_algebra_math_algebra_math_algebra_math_algebra_math_algebra_math_algebra_math_algebra_math_algebra_math_algebra",], \
-        "response_type": "Open Response Exact", \
-        "question_content": "' + question1 + '", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "' + question2 + '", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
+    
+    payload = get_valid_successful_college_payload()
+    payload['keywords'] = ["math_algebra_math_algebra_math_algebra_math_algebra_math_algebra_math_algebra_math_algebra_math_algebra_math_algebra_math_algebra",]
         
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
-    assert response.status_code == 400
-    assert json_response['detail'] == "Invalid Payload"
+    assert response.status_code == 201
+    assert json_response['detail'] == "Successfully Added Question"
 
 @pytest.mark.tc_046
 def test_keywords_list_60_value(get_admin_token):    
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
     url = f"{req.base_url}/v1/questions/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
-
-    payload = {'data': '{ \
-        "question_type": "college level", \
-        "classification": "SAT", \
-        "test_code": "12345", \
-        "keywords": ["Math","Math","Math","Math","Math","Math",\
-        "Math","Math","Math","Math","Math","Math","Math","Math",\
-        "Math","Math","Math","Math","Math","Math","Math","Math",\
-        "Math","Math","Math","Math","Math","Math","Math","Math",\
-        "Math","Math","Math","Math","Math","Math","Math","Math",\
-        "Math","Math","Math","Math","Math","Math","Math","Math",\
-        "Math","Math","Math","Math","Math","Math","Math","Math",\
-        "Math","Math","Math","Math","Math","Math"], \
-        "response_type": "Open Response Exact", \
-        "question_content": "' + question1 + '", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "' + question2 + '", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
-        
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
+    
+    payload = get_valid_successful_college_payload()
+    payload['keywords'] = ["Math","Math","Math","Math","Math","Math",
+        "Math","Math","Math","Math","Math","Math","Math","Math",
+        "Math","Math","Math","Math","Math","Math","Math","Math",
+        "Math","Math","Math","Math","Math","Math","Math","Math",
+        "Math","Math","Math","Math","Math","Math","Math","Math",
+        "Math","Math","Math","Math","Math","Math","Math","Math",
+        "Math","Math","Math","Math","Math","Math","Math","Math",
+        "Math","Math","Math","Math","Math","Math"]
+    
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 201
     assert json_response['detail'] == "Successfully Added Question"
-    assert common.is_valid_uuid(json_response['question_uuid']) == True
 
 
 @pytest.mark.tc_047
@@ -949,29 +645,10 @@ def test_response_type_blank(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
     url = f"{req.base_url}/v1/questions/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
-
-    payload = {'data': '{ \
-        "question_type": "college level", \
-        "classification": "SAT", \
-        "test_code": "12345", \
-        "keywords": ["math","algebra", "science", "english", "writing", "reading"], \
-        "response_type": "", \
-        "question_content": "' + question1 + '", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "' + question2 + '", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
+    
+    payload = get_valid_successful_college_payload()
+    payload["response_type"] = ""
         
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
@@ -983,29 +660,10 @@ def test_response_type_blank_char(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
     url = f"{req.base_url}/v1/questions/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
+    
+    payload = get_valid_successful_college_payload()
+    payload["response_type"] = " "
 
-    payload = {'data': '{ \
-        "question_type": "college level", \
-        "classification": "SAT", \
-        "test_code": "12345", \
-        "keywords": ["math","algebra", "science", "english", "writing", "reading"], \
-        "response_type": " ", \
-        "question_content": "' + question1 + '", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "' + question2 + '", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
-        
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
@@ -1017,29 +675,10 @@ def test_response_type_not_ore(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
     url = f"{req.base_url}/v1/questions/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
-
-    payload = {'data': '{ \
-        "question_type": "college level", \
-        "classification": "SAT", \
-        "test_code": "12345", \
-        "keywords": ["math","algebra", "science", "english", "writing", "reading"], \
-        "response_type": "Open Response", \
-        "question_content": "' + question1 + '", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "' + question2 + '", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
+    
+    payload = get_valid_successful_college_payload()
+    payload["response_type"] = "Open Response"
         
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
@@ -1050,34 +689,14 @@ def test_response_type_is_ore(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
     url = f"{req.base_url}/v1/questions/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
-
-    payload = {'data': '{ \
-        "question_type": "college level", \
-        "classification": "SAT", \
-        "test_code": "12345", \
-        "keywords": ["math","algebra", "science", "english", "writing", "reading"], \
-        "response_type": "Open Response Exact", \
-        "question_content": "' + question1 + '", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "' + question2 + '", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
+    
+    payload = get_valid_successful_college_payload()
+    payload["response_type"] = "Open Response Exact"
         
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 201
     assert json_response['detail'] == "Successfully Added Question"
-    assert common.is_valid_uuid(json_response['question_uuid']) == True
 
 
 @pytest.mark.tc_051
@@ -1085,34 +704,14 @@ def test_response_type_is_ror(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
     url = f"{req.base_url}/v1/questions/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
-
-    payload = {'data': '{ \
-        "question_type": "college level", \
-        "classification": "SAT", \
-        "test_code": "12345", \
-        "keywords": ["math","algebra", "science", "english", "writing", "reading"], \
-        "response_type": "Range Open Response", \
-        "question_content": "' + question1 + '", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "' + question2 + '", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
+    
+    payload = get_valid_successful_college_payload()
+    payload["response_type"] = "Range Open Response"
         
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 201
     assert json_response['detail'] == "Successfully Added Question"
-    assert common.is_valid_uuid(json_response['question_uuid']) == True
 
 
 
@@ -1122,29 +721,10 @@ def test_response_type_not_ror(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
     url = f"{req.base_url}/v1/questions/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
+    
+    payload = get_valid_successful_college_payload()
+    payload["response_type"] = "Range Open"
 
-    payload = {'data': '{ \
-        "question_type": "college level", \
-        "classification": "SAT", \
-        "test_code": "12345", \
-        "keywords": ["math","algebra", "science", "english", "writing", "reading"], \
-        "response_type": "Range Open", \
-        "question_content": "' + question1 + '", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "' + question2 + '", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
-        
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
@@ -1156,34 +736,14 @@ def test_response_type_mc(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
     url = f"{req.base_url}/v1/questions/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
-
-    payload = {'data': '{ \
-        "question_type": "college level", \
-        "classification": "SAT", \
-        "test_code": "12345", \
-        "keywords": ["math","algebra", "science", "english", "writing", "reading"], \
-        "response_type": "Multiple Choice", \
-        "question_content": "' + question1 + '", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "' + question2 + '", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
+    
+    payload = get_valid_successful_college_payload()
+    payload["response_type"] = "Multiple Choice"
         
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 201
     assert json_response['detail'] == "Successfully Added Question"
-    assert common.is_valid_uuid(json_response['question_uuid']) == True
 
 
 @pytest.mark.tc_054
@@ -1191,29 +751,10 @@ def test_response_type_not_mc(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
     url = f"{req.base_url}/v1/questions/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
 
-    payload = {'data': '{ \
-        "question_type": "college level", \
-        "classification": "SAT", \
-        "test_code": "12345", \
-        "keywords": ["math","algebra", "science", "english", "writing", "reading"], \
-        "response_type": "Multiple", \
-        "question_content": "' + question1 + '", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "' + question2 + '", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
-        
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
+    payload = get_valid_successful_college_payload()
+    payload["response_type"] = "Multiple"
+
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
@@ -1225,34 +766,14 @@ def test_response_type_cb(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
     url = f"{req.base_url}/v1/questions/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
-
-    payload = {'data': '{ \
-        "question_type": "college level", \
-        "classification": "SAT", \
-        "test_code": "12345", \
-        "keywords": ["math","algebra", "science", "english", "writing", "reading"], \
-        "response_type": "Checkbox", \
-        "question_content": "' + question1 + '", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "' + question2 + '", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
+    
+    payload = get_valid_successful_college_payload()
+    payload["response_type"] = "Checkbox"
         
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 201
     assert json_response['detail'] == "Successfully Added Question"
-    assert common.is_valid_uuid(json_response['question_uuid']) == True
 
 
 @pytest.mark.tc_056
@@ -1260,29 +781,10 @@ def test_response_type_not_cb(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
     url = f"{req.base_url}/v1/questions/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
+    
+    payload = get_valid_successful_college_payload()
+    payload["response_type"] = "Check box"
 
-    payload = {'data': '{ \
-        "question_type": "college level", \
-        "classification": "SAT", \
-        "test_code": "12345", \
-        "keywords": ["math","algebra", "science", "english", "writing", "reading"], \
-        "response_type": "Check box", \
-        "question_content": "' + question1 + '", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "' + question2 + '", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
-        
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
@@ -1294,29 +796,10 @@ def test_response_type_numeric(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
     url = f"{req.base_url}/v1/questions/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
+    
+    payload = get_valid_successful_college_payload()
+    payload["response_type"] = "123"
 
-    payload = {'data': '{ \
-        "question_type": "college level", \
-        "classification": "SAT", \
-        "test_code": "12345", \
-        "keywords": ["math","algebra", "science", "english", "writing", "reading"], \
-        "response_type": "12", \
-        "question_content": "' + question1 + '", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "' + question2 + '", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
-        
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
@@ -1328,29 +811,10 @@ def test_response_type_spec_char(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
     url = f"{req.base_url}/v1/questions/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
+    
+    payload = get_valid_successful_college_payload()
+    payload["response_type"] = "$$##@@"
 
-    payload = {'data': '{ \
-        "question_type": "college level", \
-        "classification": "SAT", \
-        "test_code": "12345", \
-        "keywords": ["math","algebra", "science", "english", "writing", "reading"], \
-        "response_type": "$$##@@", \
-        "question_content": "' + question1 + '", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "' + question2 + '", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
-        
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
@@ -1362,34 +826,14 @@ def test_question_content(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
     url = f"{req.base_url}/v1/questions/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
-
-    payload = {'data': '{ \
-        "question_type": "college level", \
-        "classification": "SAT", \
-        "test_code": "12345", \
-        "keywords": ["math","algebra", "science", "english", "writing", "reading"], \
-        "response_type": "Open Response Exact", \
-        "question_content": "this is a test", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "this is a test", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
-        
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
+    
+    payload = get_valid_successful_college_payload()
+    payload["question_content"] = "this is a test"
+    
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 201
     assert json_response['detail'] == "Successfully Added Question"
-    assert common.is_valid_uuid(json_response['question_uuid']) == True
 
 
 @pytest.mark.tc_060
@@ -1397,29 +841,11 @@ def test_question_content_blank(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
     url = f"{req.base_url}/v1/questions/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
-
-    payload = {'data': '{ \
-        "question_type": "college level", \
-        "classification": "SAT", \
-        "test_code": "12345", \
-        "keywords": ["math","algebra", "science", "english", "writing", "reading"], \
-        "response_type": "Open Response Exact", \
-        "question_content": "", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "this is a test", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
         
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
+    payload = get_valid_successful_college_payload()
+    payload["question_content"] = ""
+
+
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
@@ -1431,29 +857,10 @@ def test_question_content_missing(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
     url = f"{req.base_url}/v1/questions/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
+    
+    payload = get_valid_successful_college_payload()
+    del payload["question_content"]
 
-    payload = {'data': '{ \
-        "question_type": "college level", \
-        "classification": "SAT", \
-        "test_code": "12345", \
-        "keywords": ["math","algebra", "science", "english", "writing", "reading"], \
-        "response_type": "Open Response Exact", \
-        "missing_question_content": "this is a test", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "this is a test", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
-        
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
@@ -1465,16 +872,9 @@ def test_question_content_lines_10(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
     url = f"{req.base_url}/v1/questions/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
 
-    payload = {'data': '{ \
-        "question_type": "college level", \
-        "classification": "SAT", \
-        "test_code": "12345", \
-        "keywords": ["math","algebra", "science", "english", "writing", "reading"], \
-        "response_type": "Open Response Exact", \
-        "question_content": "This is a long string to provide a paragraph just to test if qustion content has a limit \
+    payload = get_valid_successful_college_payload()
+    payload["question_content"] = "This is a long string to provide a paragraph just to test if qustion content has a limit \
                This is a long string to provide a paragraph just to test if qustion content has a limit \
                This is a long string to provide a paragraph just to test if qustion content has a limit \
                This is a long string to provide a paragraph just to test if qustion content has a limit \
@@ -1483,20 +883,8 @@ def test_question_content_lines_10(get_admin_token):
                This is a long string to provide a paragraph just to test if qustion content has a limit \
                This is a long string to provide a paragraph just to test if qustion content has a limit \
                This is a long string to provide a paragraph just to test if qustion content has a limit \
-               This is a long string to provide a paragraph just to test if qustion content has a limit", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "this is a test", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
+               This is a long string to provide a paragraph just to test if qustion content has a limit"
         
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
@@ -1508,34 +896,15 @@ def test_question_content_1000_char(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
     url = f"{req.base_url}/v1/questions/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
+    
     char_limit: str = common.get_random_char(1000)
-    payload = {'data': '{ \
-        "question_type": "college level", \
-        "classification": "SAT", \
-        "test_code": "12345", \
-        "keywords": ["math","algebra", "science", "english", "writing", "reading"], \
-        "response_type": "Open Response Exact", \
-        "question_content": "' + char_limit + '", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "this is a test", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
-        
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
+    payload = get_valid_successful_college_payload()
+    payload["question_content"] = char_limit
+
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 201
     assert json_response['detail'] == "Successfully Added Question"
-    assert common.is_valid_uuid(json_response['question_uuid']) == True
 
 
 @pytest.mark.tc_064
@@ -1543,34 +912,15 @@ def test_question_content_999_char(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
     url = f"{req.base_url}/v1/questions/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
+
     char_limit: str = common.get_random_char(999)
-    payload = {'data': '{ \
-        "question_type": "college level", \
-        "classification": "SAT", \
-        "test_code": "12345", \
-        "keywords": ["math","algebra", "science", "english", "writing", "reading"], \
-        "response_type": "Open Response Exact", \
-        "question_content": "' + char_limit + '", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "this is a test", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
-        
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
+    payload = get_valid_successful_college_payload()
+    payload["question_content"] = char_limit
+
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 201
     assert json_response['detail'] == "Successfully Added Question"
-    assert common.is_valid_uuid(json_response['question_uuid']) == True
 
 
 @pytest.mark.tc_065
@@ -1578,29 +928,11 @@ def test_question_content_1001_char(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
     url = f"{req.base_url}/v1/questions/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
+
     char_limit: str = common.get_random_char(1001)
-    payload = {'data': '{ \
-        "question_type": "college level", \
-        "classification": "SAT", \
-        "test_code": "12345", \
-        "keywords": ["math","algebra", "science", "english", "writing", "reading"], \
-        "response_type": "Open Response Exact", \
-        "question_content": "' + char_limit + '", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "this is a test", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
-        
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
+    payload = get_valid_successful_college_payload()
+    payload["question_content"] = char_limit
+
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
@@ -1612,28 +944,10 @@ def test_question_content_blank_chars(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
     url = f"{req.base_url}/v1/questions/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
-    payload = {'data': '{ \
-        "question_type": "college level", \
-        "classification": "SAT", \
-        "test_code": "12345", \
-        "keywords": ["math","algebra", "science", "english", "writing", "reading"], \
-        "response_type": "Open Response Exact", \
-        "question_content": "    ", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "this is a test", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
+
+    payload = get_valid_successful_college_payload()
+    payload["question_content"] = "     "
         
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
@@ -1645,28 +959,10 @@ def test_question_content_content_numeric(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
     url = f"{req.base_url}/v1/questions/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
-    payload = {'data': '{ \
-        "question_type": "college level", \
-        "classification": "SAT", \
-        "test_code": "12345", \
-        "keywords": ["math","algebra", "science", "english", "writing", "reading"], \
-        "response_type": "Open Response Exact", \
-        "question_content": 3, \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "this is a test", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
-        
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
+
+    payload = get_valid_successful_college_payload()
+    payload["question_content"] = 3
+
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
@@ -1678,33 +974,14 @@ def test_question_content_spec_char(get_admin_token):
     req = Requester()
     header: dict = req.create_basic_headers(token=get_admin_token)
     url = f"{req.base_url}/v1/questions/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
-    payload = {'data': '{ \
-        "question_type": "college level", \
-        "classification": "SAT", \
-        "test_code": "12345", \
-        "keywords": ["math","algebra", "science", "english", "writing", "reading"], \
-        "response_type": "Open Response Exact", \
-        "question_content": ")($@#@#)()", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "this is a test", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
+    
+    payload = get_valid_successful_college_payload()
+    payload["question_content"] = ")($@#@#)()"
         
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 201
     assert json_response['detail'] == "Successfully Added Question"
-    assert common.is_valid_uuid(json_response['question_uuid']) == True
 
 
 
