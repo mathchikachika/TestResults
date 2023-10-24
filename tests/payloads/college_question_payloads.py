@@ -1,6 +1,7 @@
 import lib.common as common
 
-valid_successful_college_payload = {
+def get_valid_successful_college_payload():
+    return {
         "question_type": "College Level",
         "classification": "SAT",
         "test_code": "123456",
