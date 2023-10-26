@@ -2,6 +2,7 @@ from fastapi import APIRouter, Request, Depends, status, HTTPException, Body
 from typing import Any
 import math
 from bson import ObjectId
+from beanie.operators import In
 from server.authentication.jwt_bearer import JWTBearer
 from server.authentication import jwt_handler
 from server.authentication.bcrypter import Hasher
@@ -14,8 +15,12 @@ from server.models.account import (
   Account,
   AccountResponseModel,
   SubscriberAccount,
-  UpdatedPassword
+  UpdatedPassword,
+  SubscriberAccountResponseModel
 )
+
+from server.models.users import InitialUserAccountResponseModel
+from server.models.users import (UserAccounts, User)
 
 router = APIRouter()
 
@@ -24,7 +29,7 @@ router = APIRouter()
              response_description="Successfully logged in.")
 async def login(credentials: LogIn):
         try:
-            account = await Account.find_one(Account.email == credentials.email)
+            account = await SubscriberAccount.find_one(SubscriberAccount.email == credentials.email)
             if account:
               verified = Hasher().verify_password(
                     login_password=credentials.password, member_password=account.password)
@@ -39,58 +44,84 @@ async def login(credentials: LogIn):
         except Exception as e:
             if str(e) == '404':
                 raise HTTPException(status.HTTP_404_NOT_FOUND,
-                                detail="username or password is incorrect")
+                                detail="username or password is incorrect") 
+            
+            if '1 validation error for SubscriberAccount' in str(e) :
+                    raise HTTPException(status.HTTP_404_NOT_FOUND,
+                                    detail="username or password is incorrect")
             
             raise HTTPException(status.HTTP_400_BAD_REQUEST,
-                                detail="An error occured: " + str(e)) 
+                                    detail="An error occured: " + str(e))
         
 
 @router.post("/register_emails",
              status_code=status.HTTP_200_OK,
-             response_description="Successfully registered the emails.")
-async def register_emails(credentials: LogIn):
+             dependencies=[Depends(JWTBearer(access_level='subscriber'))],
+             response_description="Successfully registered emails.")
+async def register_emails(request: Request, user_accounts: UserAccounts):
         try:
-            account = await Account.find_one(Account.email == credentials.email)
-            if account:
-              verified = Hasher().verify_password(
-                    login_password=credentials.password, member_password=account.password)
-              
-              if verified:
-                  name = account.first_name + " " + account.last_name
-                  token = jwt_handler.signJWT(str(account.id), name, account.role)
-                  return token
-
-            raise HTTPException(status.HTTP_404_NOT_FOUND,
-                                detail="username or password is incorrect") 
-        except Exception as e:
-            if str(e) == '404':
-                raise HTTPException(status.HTTP_404_NOT_FOUND,
-                                detail="username or password is incorrect")
+            user_accounts = user_accounts.model_dump()
+            user_id = request.state.user_details['uuid']
+            accounts = [
+                        User(subscriber_id=user_id, first_name='DEFAULT', last_name='DEFAULT',
+                            status='inactive', role=user['role'], email=user['email'], password="DEFAULT")
+                        for user in user_accounts['accounts']
+                      ]
             
+            results = await User.insert_many(accounts)
+            accounts = await User.find(
+                            In(User.id, results.inserted_ids)
+                        ).project(InitialUserAccountResponseModel).to_list()
+            
+            return {"message": "Successfully registered emails", "accounts": accounts}
+        
+        except Exception as e:
             raise HTTPException(status.HTTP_400_BAD_REQUEST,
                                 detail="An error occured: " + str(e)) 
 
 
-@router.get("/user_data", dependencies=[Depends(JWTBearer(access_level='staff'))], status_code=status.HTTP_200_OK)
-async def get_user_data(request: Request, account_id: str = None):
-    if account_id:
-        sample = JWTBearer(access_level='admin')
-        await sample.__call__(request)
-    else:
-        account_id = request.state.user_details['uuid']
-
+@router.get("/all_users", dependencies=[Depends(JWTBearer(access_level='subscriber'))], status_code=status.HTTP_200_OK)
+async def get_user_data(request: Request, role: str = None, status: str = None, page_num: int = 1, page_size: int = 10):
+    validate_query_params(page_num=page_num, page_size=page_size)
     try:
-        account = await Account.find({"_id":ObjectId(account_id) }).project(AccountResponseModel).to_list(None)
+        user_id = request.state.user_details['uuid']
+        query = {'subscriber_id': user_id }
+        if role:
+            query['role'] = role
+        
+        if status:
+            query['status'] = status
+
+        accounts = await User.find(query).project(InitialUserAccountResponseModel).sort(-User.updated_at).skip((page_num - 1) * page_size).limit(page_size).to_list(None)
+        total_count = await User.find(query).count()
+        response = {
+                "data": accounts,
+                "count": len(accounts),
+                "total": total_count,
+                "page": page_num,
+                "no_of_pages": math.ceil(total_count/page_size)
+            }
+
+        return response
+    except Exception as e:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST,
+                                detail="An error occured: " + str(e))
+
+@router.get("/user_data", dependencies=[Depends(JWTBearer(access_level='subscriber'))], status_code=status.HTTP_200_OK)
+async def get_user_data(request: Request):
+    try:
+        user_id = request.state.user_details['uuid']
+        account = await SubscriberAccount.find({"_id":ObjectId(user_id) }).project(SubscriberAccountResponseModel).to_list(None)
         return account
     except Exception as e:
         if str(e) == '404':
                 raise HTTPException(status.HTTP_404_NOT_FOUND,
                                 detail="Account not found") 
-            
+      
         raise HTTPException(status.HTTP_400_BAD_REQUEST,
                                 detail="An error occured: " + str(e))
 
-@router.put("/update_details", dependencies=[Depends(JWTBearer(access_level='staff'))], status_code=status.HTTP_200_OK)
+@router.put("/update_details", dependencies=[Depends(JWTBearer(access_level='subscriber'))], status_code=status.HTTP_200_OK)
 async def update_account_details(request: Request,
                         account_id: str = None,
                         updated_account: Any = Body(openapi_examples=sample_payloads.updated_account_payload)):
@@ -118,18 +149,12 @@ async def update_account_details(request: Request,
         raise HTTPException(status.HTTP_400_BAD_REQUEST,
                                 detail="An error occured: " + str(e))
 
-@router.put("/change_password", dependencies=[Depends(JWTBearer(access_level='staff'))], status_code=status.HTTP_200_OK)
-async def change_password(request: Request, updated_password: UpdatedPassword, account_id: str = None, ):
+@router.put("/change_password", dependencies=[Depends(JWTBearer(access_level='subscriber'))], status_code=status.HTTP_200_OK)
+async def change_password(request: Request, updated_password: UpdatedPassword):
     
-    updated_password.updated_by = request.state.user_details['name']
-    if account_id:
-      sample = JWTBearer(access_level='admin')
-      await sample.__call__(request)
-    else:
-      account_id = request.state.user_details['uuid']
-
     try:
-        fetched_account = await Account.get(account_id)
+        user_id = request.state.user_details['uuid']
+        fetched_account = await Account.get(user_id)
 
         if fetched_account:
             verified = Hasher().verify_password(
