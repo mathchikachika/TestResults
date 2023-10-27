@@ -1509,7 +1509,7 @@ def test_category_numeric_string(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 201
     assert json_response['detail'] == "Successfully Added Question"
@@ -1553,7 +1553,7 @@ def test_category_missing(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == "category is required"
@@ -1595,7 +1595,7 @@ def test_category_eq_math(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == "Valid category is from 1 to 5"
@@ -1639,7 +1639,7 @@ def test_category_eq_science(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == "Valid category is from 1 to 5"
@@ -1683,7 +1683,7 @@ def test_category_eq_english(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == "Valid category is from 1 to 5"
@@ -1726,7 +1726,7 @@ def test_category_eq_blank(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == "category is required"
@@ -1769,7 +1769,7 @@ def test_category_eq_blank_char(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == "category should not be empty"
@@ -1812,7 +1812,7 @@ def test_category_eq_special_char(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == "Valid category is from 1 to 5"
@@ -1856,7 +1856,7 @@ def test_category_eq_neg_num(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == "Valid category is from 1 to 5"
@@ -1900,7 +1900,7 @@ def test_keywords_list_strings(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 201
     assert json_response['detail'] == "Successfully Added Question"
@@ -1944,7 +1944,7 @@ def test_keywords_list_alpha_num(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == "all values in keywords must be string"
@@ -1987,7 +1987,7 @@ def test_keywords_list_special_char(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 201
     assert json_response['detail'] == "Successfully Added Question"
@@ -2031,7 +2031,7 @@ def test_keywords_empty_list(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == "keywords must not be empty"
@@ -2074,7 +2074,7 @@ def test_keywords_missing(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == "keywords is required"
@@ -2117,7 +2117,7 @@ def test_keywords_all_num(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == "all values in keywords must be string"
@@ -2160,7 +2160,7 @@ def test_keywords_blank_entry(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == "a value in keywords should not be an empty string"
@@ -2203,7 +2203,7 @@ def test_keywords_long_value(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == "Invalid Payload"
@@ -2252,7 +2252,7 @@ def test_keywords_list_50_value(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == "Invalid Payload"
@@ -2295,7 +2295,7 @@ def test_student_expectations_num_str(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 201
     assert json_response['detail'] == "Successfully Added Question"
@@ -2339,7 +2339,7 @@ def test_student_expectations_special_char(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == "Invalid student expectations"
@@ -2383,7 +2383,7 @@ def test_student_expectations_list_str_num(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == "Invalid student expectations"
@@ -2426,7 +2426,7 @@ def test_student_expectations_list_num_num(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == "student_expectations must be a string"
@@ -2469,7 +2469,7 @@ def test_student_expectations_list_str_spec_char(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == "Invalid Payload"
@@ -2512,7 +2512,7 @@ def test_student_expectations_list_num_str(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == "student_expectations must be a string"
@@ -2555,7 +2555,7 @@ def test_student_expectations_list_empty(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == "student_expectations must not be empty"
@@ -2598,7 +2598,7 @@ def test_student_expectations_list_missing(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == "student_expectations is required"
@@ -2641,7 +2641,7 @@ def test_student_expectations_list_blank_strs(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == "student_expectations should not be an empty string"
@@ -2683,7 +2683,7 @@ def test_response_type_blank(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == "response_type is required"
@@ -2726,7 +2726,7 @@ def test_response_type_blank_char(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == "response_type is required"
@@ -2768,7 +2768,7 @@ def test_response_type_missing(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == "response_type is required"
@@ -2810,7 +2810,7 @@ def test_response_type_not_ore(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == "invalid response type"
@@ -2852,7 +2852,7 @@ def test_response_type_is_ore(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 201
     assert json_response['detail'] == "Successfully Added Question"
@@ -2896,7 +2896,7 @@ def test_response_type_is_ror(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 201
     assert json_response['detail'] == "Successfully Added Question"
@@ -2939,7 +2939,7 @@ def test_response_type_not_ror(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == "invalid response type"
@@ -2981,7 +2981,7 @@ def test_response_type__mc(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 201
     assert json_response['detail'] == "Successfully Added Question"
@@ -3025,7 +3025,7 @@ def test_response_type__not_mc(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == "invalid response type"
@@ -3067,7 +3067,7 @@ def test_response_type_cb(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 201
     assert json_response['detail'] == "Successfully Added Question"
@@ -3110,7 +3110,7 @@ def test_response_type_not_cb(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == "invalid response type"
@@ -3152,7 +3152,7 @@ def test_response_type_numeric(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == "response_type must be a string"
@@ -3194,7 +3194,7 @@ def test_response_type_spec_char(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == "invalid response type"
@@ -3236,7 +3236,7 @@ def test_question_conent(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 201
     assert json_response['detail'] == "Successfully Added Question"
@@ -3279,7 +3279,7 @@ def test_question_content_blank(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == "question_content is required"
@@ -3321,7 +3321,7 @@ def test_question_content_missing(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == "question_content is required"
@@ -3372,7 +3372,7 @@ def test_question_content_lines_10(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == 'question content should not exceed 1000 characters'
@@ -3415,7 +3415,7 @@ def test_question_content_1000_char(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 201
     assert json_response['detail'] == "Successfully Added Question"
@@ -3458,7 +3458,7 @@ def test_question_content_999_char(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 201
     assert json_response['detail'] == "Successfully Added Question"
@@ -3502,7 +3502,7 @@ def test_question_content_1001_char(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == "question content should not exceed 1000 characters"
@@ -3544,7 +3544,7 @@ def test_question_content_blank_chars(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == 'question content should not be empty'
@@ -3586,7 +3586,7 @@ def test_question_content_numeric(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == 'question content must be a string'
@@ -3628,7 +3628,7 @@ def test_question_content_spec_char(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 201
     assert json_response['detail'] == "Successfully Added Question"
@@ -3672,7 +3672,7 @@ def test_question_img(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == 'Invalid Payload'
@@ -3715,7 +3715,7 @@ def test_question_img_missing(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == 'missing_question_img is required'
@@ -3759,7 +3759,7 @@ def test_question_img_blank_char(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == 'invalid image insertion: image must be added through the Form, not in payload.'
@@ -3803,7 +3803,7 @@ def test_question_img_numeric(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
     assert json_response['detail'] == 'image must be a string'
@@ -3840,7 +3840,7 @@ def test_options_single(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 201
     assert json_response['detail'] == "Successfully Added Question"
@@ -3954,7 +3954,7 @@ def test_options_group_10(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 201
     assert json_response['detail'] == "Successfully Added Question"
@@ -4404,7 +4404,7 @@ def test_options_group_60(get_admin_token):
 
     
     response = requests.request(
-        "POST", url, headers=header, data=payload, files=upload_file)
+        "POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 201
     assert json_response['detail'] == "Successfully Added Question"
@@ -4892,68 +4892,6 @@ def test_options_content_1000_char(get_admin_token):
     assert response.status_code == 201
     assert json_response['detail'] == "Successfully Added Question"
     
-
-@pytest.mark.tc_105
-def test_options_invalid_option_image(get_admin_token):
-    req = Requester()
-    header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/v1/questions/create"
-    
-
-    payload = {'data': '{ \
-      "question_type": "STAAR", \
-      "grade_level": 3, \
-      "release_date": "2024-02", \
-      "category": "1", \
-      "keywords": ["math"], \
-      "student_expectations": ["A.1(A)"], \
-      "response_type": "Open Response Exact", \
-      "question_content": "this is a test", \
-      "question_img": "", \
-      "options": [ \
-        { \
-          "letter": "a", \
-          "content": "' + common.get_random_char(1000) + '", \
-          "image": "' + str(upload_file) + '", \
-          "unit": "pounds", \
-          "is_answer": true \
-        } \
-      ] \
-    }'}
-
-    response = requests.request("POST", url, headers=header, json=payload)
-    json_response = json.loads(response.text)
-    assert response.status_code == 400
-    assert json_response['detail'] == 'invalid option image insertion: image must be added through the Form, not in payload.'
-
-@pytest.mark.tc_106
-def test_options_invalid_question_image(get_admin_token):
-    req = Requester()
-    header: dict = req.create_basic_headers(token=get_admin_token)
-    url = f"{req.base_url}/v1/questions/create"
-    
-
-    payload = {'data': '{ \
-      "question_type": "STAAR", \
-      "grade_level": 3, \
-      "release_date": "2024-02", \
-      "category": "1", \
-      "keywords": ["math"], \
-      "student_expectations": ["A.1(A)"], \
-      "response_type": "Open Response Exact", \
-      "question_content": "this is a test", \
-      "question_img": "' + str(upload_file) + '", \
-      "options": [ \
-        { \
-          "letter": "a", \
-          "content": "' + common.get_random_char(1000) + '", \
-          "image": "", \
-          "unit": "pounds", \
-          "is_answer": true \
-        } \
-      ] \
-    }'}
-
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
     assert response.status_code == 400
