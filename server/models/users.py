@@ -2,6 +2,8 @@ from datetime import datetime
 from typing import Optional, List
 from pydantic import BaseModel, model_validator, validator, Field 
 import re
+import secrets
+import string
 from beanie import Document, PydanticObjectId, Indexed
 from server.models.validators.accounts_validator import (
     validate_fields,
@@ -160,6 +162,7 @@ class UserAccounts(BaseModel):
 
 class UserResponseModel(BaseModel):
     id: PydanticObjectId = Field(alias='_id')
+    subscriber_id: str
     first_name: str
     middle_name: Optional[str] = None
     last_name: str
@@ -179,5 +182,79 @@ class InitialUserAccountResponseModel(BaseModel):
     email: str
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
-# class SubscriberAccountResponseModel(AccountResponseModel):
-#     school: str
+
+class UpdatedUserViaSubscriber(BaseModel):
+    first_name: str
+    middle_name: Optional[str] = None
+    last_name: str
+    email: str
+    updated_by: Optional[str] = None
+    updated_at: Optional[datetime] = None
+
+    @validator('updated_at', pre=True, always=True)
+    def set_updated_at_now(v):
+        return v or datetime.utcnow()
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "first_name": "Peter",
+                "middle_name": "John",
+                "last_name": "James",
+                "email": "peterjohnj@gmail.com"
+            }
+        }
+
+class UpdatedRole(BaseModel):
+    role: str
+    updated_by: Optional[str] = None
+    updated_at: Optional[datetime] = None
+
+    @validator('updated_at', pre=True, always=True)
+    def set_updated_at_now(v):
+        return v or datetime.utcnow()
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "role": "teacher",
+            }
+        }
+
+class UpdatedStatus(BaseModel):
+    status: str
+    updated_by: Optional[str] = None
+    updated_at: Optional[datetime] = None
+
+    @validator('updated_at', pre=True, always=True)
+    def set_updated_at_now(v):
+        return v or datetime.utcnow()
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "status": "active",
+            }
+        }
+
+class ResetPassword(BaseModel):
+    password: Optional[str] = None
+    updated_by: Optional[str] = None
+    updated_at: Optional[datetime] = None
+
+    @validator('updated_at', pre=True, always=True)
+    def set_updated_at_now(v):
+        return v or datetime.utcnow()
+    
+    @validator('password', pre=True, always=True)
+    def generate_password(v):
+        letters = string.ascii_letters
+        digits = string.digits
+        special_chars = string.punctuation.replace('"','')
+        special_chars = special_chars.replace('"','').replace("'","").replace(".","")
+        choices = letters + digits + special_chars
+        v = ''
+        for i in range(9):
+            v += ''.join(secrets.choice(choices))
+        
+        return v
