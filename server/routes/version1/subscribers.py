@@ -22,6 +22,7 @@ from server.models.users import (
     UpdatedStatus,
     UpdatedRole,
     ResetPassword,
+    UserResponseModel,
     InitialUserAccountResponseModel
 )
 
@@ -84,7 +85,7 @@ async def register_emails(request: Request, user_accounts: UserAccounts):
 
 
 @router.get("/all_users", dependencies=[Depends(JWTBearer(access_level='subscriber'))], status_code=status.HTTP_200_OK)
-async def get_user_data(request: Request, role: str = None, status: str = None, page_num: int = 1, page_size: int = 10):
+async def get_all_users(request: Request, role: str = None, status: str = None, page_num: int = 1, page_size: int = 10):
     validate_query_params(page_num=page_num, page_size=page_size)
     try:
         user_id = request.state.user_details['uuid']
@@ -95,7 +96,7 @@ async def get_user_data(request: Request, role: str = None, status: str = None, 
         if status:
             query['status'] = status
 
-        accounts = await User.find(query).project(InitialUserAccountResponseModel).sort(-User.updated_at).skip((page_num - 1) * page_size).limit(page_size).to_list(None)
+        accounts = await User.find(query).project(UserResponseModel).sort(-User.updated_at).skip((page_num - 1) * page_size).limit(page_size).to_list(None)
         total_count = await User.find(query).count()
         response = {
                 "data": accounts,
@@ -111,12 +112,18 @@ async def get_user_data(request: Request, role: str = None, status: str = None, 
                                 detail="An error occured: " + str(e))
 
 @router.get("/user_data", dependencies=[Depends(JWTBearer(access_level='subscriber'))], status_code=status.HTTP_200_OK)
-async def get_user_data(request: Request):
+async def get_user_data(request: Request, user_id: str = None):
     try:
-        user_id = request.state.user_details['uuid']
-        account = await SubscriberAccount.find({"_id":ObjectId(user_id) }).project(SubscriberAccountResponseModel).to_list(None)
+        model = User
+        projectionModel = UserResponseModel
+        if not user_id:
+            user_id = request.state.user_details['uuid']
+            model = SubscriberAccount
+            projectionModel = SubscriberAccountResponseModel
+
+        account = await model.find({"_id":ObjectId(user_id) }).project(projectionModel).to_list(None)
         if account:
-            return account
+            return {'data': account[0]}
     
         raise HTTPException(status.HTTP_404_NOT_FOUND,
                                 detail="Account not found") 
