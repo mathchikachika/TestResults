@@ -35,7 +35,7 @@ router = APIRouter()
              response_description="Successfully logged in.")
 async def login(credentials: LogIn):
         try:
-            account = await Account.find_one(Account.email == credentials.email)
+            account = await User.find_one(User.email == credentials.email)
             if account:
               verified = Hasher().verify_password(
                     login_password=credentials.password, member_password=account.password)
@@ -56,14 +56,11 @@ async def login(credentials: LogIn):
                                 detail="An error occured: " + str(e))
         
 @router.get("/user_data", dependencies=[Depends(JWTBearer(access_level='subscriber'))], status_code=status.HTTP_200_OK)
-async def get_user_data(request: Request, user_id: str = None):
+async def get_user_data(request: Request):
     try:
-        model = User
-        projectionModel = UserResponseModel
-        if not user_id:
-            user_id = request.state.user_details['uuid']
-            model = SubscriberAccount
-            projectionModel = SubscriberAccountResponseModel
+        user_id = request.state.user_details['uuid']
+        model = SubscriberAccount
+        projectionModel = SubscriberAccountResponseModel
 
         account = await model.find({"_id":ObjectId(user_id) }).project(projectionModel).to_list(None)
         if account:
@@ -81,13 +78,11 @@ async def get_user_data(request: Request, user_id: str = None):
 
 @router.patch("/update_details", dependencies=[Depends(JWTBearer(access_level='subscriber'))], status_code=status.HTTP_200_OK)
 async def update_account_details(request: Request,
-                        updated_account: UpdatedUserViaSubscriber,
-                        user_id: str = None
+                        updated_account: UpdatedUserViaSubscriber
                         ):
         try:
             updated_account.updated_by = request.state.user_details['name']
-            if not user_id:
-                user_id = request.state.user_details['uuid']
+            user_id = request.state.user_details['uuid']
             
             fetched_account = await User.get(user_id)
             if fetched_account:
