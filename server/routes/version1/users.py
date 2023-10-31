@@ -1,32 +1,20 @@
-from fastapi import APIRouter, Request, Depends, status, HTTPException, Body
-from typing import Any
-import math
+from fastapi import APIRouter, Request, Depends, status, HTTPException
 from bson import ObjectId
 from server.authentication.jwt_bearer import JWTBearer
 from server.authentication import jwt_handler
 from server.authentication.bcrypter import Hasher
-from server.connection.database import db
-from server.models.utilities import sample_payloads, model_parser
-from server.models.validators.query_params_validators import validate_query_params
 from server.models.account import (
   LogIn,
   Account,
-  AccountResponseModel,
   SubscriberAccount,
   UpdatedPassword,
   SubscriberAccountResponseModel
 )
 
 from server.models.users import (
-    UserAccounts,
     User,
     Registration,
-    UpdatedUserViaSubscriber,
-    UpdatedStatus,
-    UpdatedRole,
-    ResetPassword,
-    UserResponseModel,
-    InitialUserAccountResponseModel
+    UpdatedUserViaSubscriber
 )
 
 router = APIRouter()
