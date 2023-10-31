@@ -20,6 +20,7 @@ from server.models.account import (
 from server.models.users import (
     UserAccounts,
     User,
+    Registration,
     UpdatedUserViaSubscriber,
     UpdatedStatus,
     UpdatedRole,
@@ -54,6 +55,11 @@ async def login(credentials: LogIn):
             
             raise HTTPException(status.HTTP_400_BAD_REQUEST,
                                 detail="An error occured: " + str(e))
+
+
+@router.post("/register", status_code=status.HTTP_200_OK)
+async def login(user: Registration):
+    pass
         
 @router.get("/user_data", dependencies=[Depends(JWTBearer(access_level='subscriber'))], status_code=status.HTTP_200_OK)
 async def get_user_data(request: Request):
@@ -137,4 +143,21 @@ async def change_password(request: Request, updated_password: UpdatedPassword):
         
         if str(e) == '400':
                 raise HTTPException(status.HTTP_400_BAD_REQUEST,
-                                detail="Wrong password") 
+                                detail="Wrong password")
+
+@router.patch("/update/student/contact_person", dependencies=[Depends(JWTBearer(access_level='student'))], status_code=status.HTTP_200_OK)
+async def update_class(request: Request):
+    pass
+
+@router.patch("/update/teacher/education", dependencies=[Depends(JWTBearer(access_level='student'))], status_code=status.HTTP_200_OK)
+async def update_class(request: Request):
+    pass
+
+@router.patch("/update/user_profile_picture", dependencies=[Depends(JWTBearer(access_level='student'))], status_code=status.HTTP_200_OK)
+async def update_class(request: Request):
+    pass
+
+
+@router.delete("/delete/user_profile_picture", dependencies=[Depends(JWTBearer(access_level='student'))], status_code=status.HTTP_200_OK)
+async def update_class(request: Request):
+    pass
