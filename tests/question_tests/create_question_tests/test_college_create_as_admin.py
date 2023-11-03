@@ -615,8 +615,8 @@ def test_keywords_long_value(get_admin_token):
         
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
-    assert response.status_code == 201
-    assert json_response['detail'] == "Successfully Added Question"
+    assert response.status_code == 400
+    assert json_response['detail'] == "Max length of keyword reached"
 
 @pytest.mark.tc_046
 def test_keywords_list_60_value(get_admin_token):    
@@ -636,8 +636,8 @@ def test_keywords_list_60_value(get_admin_token):
     
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
-    assert response.status_code == 201
-    assert json_response['detail'] == "Successfully Added Question"
+    assert response.status_code == 400
+    assert json_response['detail'] == "Max number of keywords reached"
 
 
 @pytest.mark.tc_047
