@@ -1,4 +1,5 @@
 import string, random, json, os, sys
+from bson import ObjectId
 
 import requests
 CURRENT_DIR = os.getcwd()
@@ -188,14 +189,13 @@ def count_items(json_data: str = "", item_key: str = "", item_value: str = "") -
         pass
     return count
 
-def is_valid_uuid(uuid_to_test, version=4) -> bool:
-    result: bool
-    try:
-        uuid_obj = UUID(uuid_to_test, version=version)
-        result = str(uuid_obj) == uuid_to_test
-    except ValueError:
-        result = False
-    return result
+def is_valid_id(question_id):
+   try:
+       valid_id = ObjectId(question_id)
+       return True
+   except Exception as e:
+       if 'not a valid ObjectId' in str(e):
+                return False
 
 def get_current_yyyy_mm():
     try:
