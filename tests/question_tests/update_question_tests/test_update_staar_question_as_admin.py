@@ -1,3 +1,4 @@
+from bson import ObjectId
 from pytest import fixture
 import pdb, requests
 import os, sys, json
@@ -17,7 +18,8 @@ import lib.common as common
 from lib.common import get_random_question
 import lib.generate_token as generate_token
 from lib.requester import Requester
-from lib.mw_sql import execute_query
+from lib.mw_db import get_db
+from tests.payloads.valid_question_payloads import get_valid_successful_staar_payload
 
 faker = Faker()
 
@@ -34,56 +36,56 @@ def test_update_staar_question(get_admin_token):
     req: Requester = Requester()
     random_data: dict = common.get_staar_random_payload_data()
     json_random_data: str = json.dumps(random_data)
-    staar_classic: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE question_type = 'STAAR' LIMIT 1")
-    sql_classic_uuid: str = staar_classic[0][0]
-    sql_classic_question_type: str = staar_classic[0][4]
-    sql_classic_question: str = staar_classic[0][6]
-    sql_classic_status: str = staar_classic[0][8]
+    staar_classic: dict = get_db().question_collection.find_one({'question_type': 'STAAR'})
+    
+    sql_classic_id: str = staar_classic['_id']
+    sql_classic_question_type: str = staar_classic['question_type']
+    sql_classic_question: str = staar_classic['question_content']
+    sql_classic_status: str = staar_classic['question_status']
 
-    payload = {'data': '{"question_type": "STAAR", "update_note": "'+ random_data['random_question_content'] +'", "grade_level": 3, "release_date": "2023-05", "category": "' + random_data['random_category'] + '","keywords": ["math"], "student_expectations": ["'+ random_data['random_student_expectation'] +'"],"response_type": "'+ random_data['random_response_type'] +'","question_content": "'+ random_data['random_question_content'] + '","question_img": "","options": [{"letter": "' + random_data['random_letter'] + '","content": "'+ random_data['random_question_content'] +'","image": "","unit": "pounds","is_answer": true},{"letter": "' + random_data['random_letter'] + '","content": "option b","image": "","unit": "pounds","is_answer": false}]}'}
+    payload = get_valid_successful_staar_payload()
 
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url: str = f"{req.base_url}/question/update/staar/{sql_classic_uuid}"
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}\\tests\\images", "image_01.jpg")
+    url: str = f"{req.base_url}/v1/questions/update/{sql_classic_id}"
+    # upload_file: list = common.set_image_file(f"{CURRENT_DIR}\\tests\\images", "image_01.jpg")
     # time.sleep(1)
-    response = requests.request("PUT", url, headers=header, data=payload, files=upload_file)
+    response = requests.request("PUT", url, headers=header, json=payload)
     questions: dict = json.loads(response.text)
     time.sleep(1)
     assert_that(response.status_code).is_equal_to(200)
     assert_that(questions['detail']).is_equal_to("Successfully updated")
-    assert_that(questions['question_uuid']).is_equal_to(sql_classic_uuid)
-    sql_staar_updated: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE uuid = '{sql_classic_uuid}'")
-    sql_updated_uuid: str = sql_staar_updated[0][0]
-    sql_updated_question_type: str = sql_staar_updated[0][4]
-    sql_updated_response_type: str = sql_staar_updated[0][5]
-    sql_updated_question: str = sql_staar_updated[0][6]
-    sql_updated_status: str = sql_staar_updated[0][8]
+    assert_that(questions['_id']).is_equal_to(sql_classic_id)
+    sql_staar_updated: list = get_db().question_collection.find_one({'_id': ObjectId(sql_classic_id)})
+    sql_updated_id: str = sql_staar_updated['_id']
+    sql_updated_question_type: str = sql_staar_updated['question_type']
+    sql_updated_response_type: str = sql_staar_updated['response_type']
+    sql_updated_question: str = sql_staar_updated['question_content']
+    sql_updated_status: str = sql_staar_updated['question_status']
 
     # time.sleep(1)
-    assert_that(sql_updated_uuid).is_equal_to(sql_classic_uuid)
+    assert_that(sql_updated_id).is_equal_to(sql_classic_id)
     assert_that(sql_updated_question_type).is_equal_to(sql_classic_question_type)
-    assert_that(sql_updated_response_type).is_equal_to(random_data['random_response_type'])
+    assert_that(sql_updated_response_type).is_equal_to(random_data['response_type'])
     assert_that(sql_updated_question).is_not_equal_to(sql_classic_question)
     assert_that(sql_updated_status).is_equal_to(sql_classic_status)
 
 @pytest.mark.tc_002
-def test_update_staar_question_invalid_uuid(get_admin_token):
+def test_update_staar_question_invalid_id(get_admin_token):
     req: Requester = Requester()
     random_data: dict = common.get_staar_random_payload_data()
     json_random_data: str = json.dumps(random_data)
-    staar_classic: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE question_type = 'STAAR' LIMIT 1")
-    sql_classic_invalid_uuid: str = staar_classic[0][0]  + "XYZ"
+    staar_classic: list = get_db().question_collection.find_one({'question_type': 'STAAR'})
+    sql_classic_invalid_id: str = str(staar_classic['_id'])  + "XYZ"
 
-    payload = {'data': '{"question_type": "STAAR", "update_note": "'+ random_data['random_question_content'] +'", "grade_level": 3, "release_date": "2023-05", "category": "' + random_data['random_category'] + '","keywords": ["math"], "student_expectations": ["'+ random_data['random_student_expectation'] +'"],"response_type": "'+ random_data['random_response_type'] +'","question_content": "'+ random_data['random_question_content'] + '","question_img": "","options": [{"letter": "' + random_data['random_letter'] + '","content": "'+ random_data['random_question_content'] +'","image": "","unit": "pounds","is_answer": true},{"letter": "' + random_data['random_letter'] + '","content": "option b","image": "","unit": "pounds","is_answer": false}]}'}
+    payload = get_valid_successful_staar_payload()
+    payload['update_note'] = "Updated message"
 
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url: str = f"{req.base_url}/question/update/staar/{sql_classic_invalid_uuid}"
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}\\tests\\images", "image_01.jpg")
-    response = requests.request("PUT", url, headers=header, data=payload, files=upload_file)
+    url: str = f"{req.base_url}/v1/questions/update/{sql_classic_invalid_id}"
+    # upload_file: list = common.set_image_file(f"{CURRENT_DIR}\\tests\\images", "image_01.jpg")
+    response = requests.request("PUT", url, headers=header, json=payload)
     questions: dict = json.loads(response.text)
+    print(questions)
     # time.sleep(1)
     assert_that(response.status_code).is_equal_to(400)
-    assert_that(questions['detail']).is_equal_to("Invalid uuid")
+    assert_that(questions['detail']).is_equal_to("Invalid id")
