@@ -1,3 +1,4 @@
+from bson import ObjectId
 from pytest import fixture
 import pdb, requests
 import os, sys, json
@@ -17,7 +18,8 @@ import lib.common as common
 from lib.common import get_random_question
 import lib.generate_token as generate_token
 from lib.requester import Requester
-from lib.mw_sql import execute_query
+from lib.mw_db import get_db
+from tests.payloads.valid_question_payloads import get_valid_successful_mathworld_payload
 
 faker = Faker()
 
@@ -33,102 +35,51 @@ def get_admin_token():
 def test_update_mathworld_question(get_admin_token):
     req: Requester = Requester()
     random_data: dict = common.get_mathworld_random_payload_data()
-    mathworld_classic: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE question_type = 'Mathworld' LIMIT 1")
-    sql_classic_uuid: str = mathworld_classic[0][0]
-    sql_classic_question_type: str = mathworld_classic[0][4]
-    sql_classic_question: str = mathworld_classic[0][6]
-    sql_classic_status: str = mathworld_classic[0][8]
+    mathworld_classic: dict = get_db().question_collection.find_one({'question_type': 'Mathworld'})
+    sql_classic_id: str = mathworld_classic['_id']
+    sql_classic_question_type: str = mathworld_classic['question_type']
+    sql_classic_question: str = mathworld_classic['question_content']
+    sql_classic_status: str = mathworld_classic['question_status']
 
-    random_payload = {'data': '{ \
-        "question_type": "MathWorld", \
-        "grade_level": 3, \
-        "teks_code": "A.1", \
-        "subject": "Algebra I", \
-        "topic": "' + random_data['random_topic'] + '", \
-        "category": "' + random_data['random_category'] + '", \
-        "keywords": ["happy"], \
-        "student_expectations": ["' + random_data['random_student_expectations'] + '"], \
-        "difficulty": "'+ random_data['random_difficulty'] + '", \
-        "points": 2, \
-        "response_type": "' + random_data['random_response_type'] + '", \
-        "question_content": "'+ random_data['random_question_content'] + '", \
-        "question_img": "", \
-        "update_note": "'+ random_data['random_question_content'] + '", \
-        "options": [ \
-            { \
-            "letter": "' + random_data['random_letter']+ '", \
-            "content": "' + random_data['random_question_content'] + '", \
-            "image": "", \
-            "unit": "' + random_data['random_unit'] + '", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
+    random_payload = get_valid_successful_mathworld_payload()
 
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url: str = f"{req.base_url}/question/update/mathworld/{sql_classic_uuid}"
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}\\tests\\images", "image_01.jpg")
-    response = requests.request("PUT", url, headers=header, data=random_payload, files=upload_file)
+    url: str = f"{req.base_url}/v1/questions/update/{sql_classic_id}"
+    # upload_file: list = common.set_image_file(f"{CURRENT_DIR}\\tests\\images", "image_01.jpg")
+    response = requests.request("PUT", url, headers=header, json=random_payload)
     updated_response: dict = json.loads(response.text)
     time.sleep(2)
     assert_that(response.status_code).is_equal_to(200)
     assert_that(updated_response['detail']).is_equal_to("Successfully updated")
-    assert_that(updated_response['question_uuid']).is_equal_to(sql_classic_uuid)
-    sql_mathworld_updated: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE uuid = '{sql_classic_uuid}'")
+    assert_that(updated_response['_id']).is_equal_to(sql_classic_id)
+    sql_mathworld_updated: dict = get_db().question_collection.find_one({'_id': ObjectId(sql_classic_id)})
 
-    sql_updated_uuid: str = sql_mathworld_updated[0][0]
-    sql_updated_question_type: str = sql_mathworld_updated[0][4]
-    sql_updated_response_type: str = sql_mathworld_updated[0][5]
-    sql_updated_question: str = sql_mathworld_updated[0][6]
-    sql_updated_status: str = sql_mathworld_updated[0][8]
+    sql_updated_id: str = sql_mathworld_updated['_id']
+    sql_updated_question_type: str = sql_mathworld_updated['question_type']
+    sql_updated_response_type: str = sql_mathworld_updated['response_type']
+    sql_updated_question: str = sql_mathworld_updated['question_content']
+    sql_updated_status: str = sql_mathworld_updated['question_status']
     # time.sleep(1)
-    assert_that(sql_updated_uuid).is_equal_to(sql_classic_uuid)
+    assert_that(sql_updated_id).is_equal_to(sql_classic_id)
     assert_that(sql_updated_question_type).is_equal_to(sql_classic_question_type)
-    assert_that(sql_updated_response_type).is_equal_to(random_data['random_response_type'])
+    assert_that(sql_updated_response_type).is_equal_to(random_data['response_type'])
     assert_that(sql_updated_question).is_not_equal_to(sql_classic_question)
     assert_that(sql_updated_status).is_equal_to(sql_classic_status)
 
 
 @pytest.mark.tc_002
-def test_update_mathworld_question_invalid_uuid(get_admin_token):
+def test_update_mathworld_question_invalid_id(get_admin_token):
     req: Requester = Requester()
     random_data: dict = common.get_mathworld_random_payload_data()
-    mathworld_classic: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE question_type = 'Mathworld' LIMIT 1")
-    sql_classic_invalid_uuid: str = mathworld_classic[0][0] + "333"
+    mathworld_classic: list = get_db().question_collection.find_one({'question_type': 'Mathworld'})
+    sql_classic_invalid_id: str = str(mathworld_classic['_id']) + "333"
 
-    random_payload = {'data': '{ \
-        "question_type": "MathWorld", \
-        "grade_level": 3, \
-        "teks_code": "' + "20344" + '", \
-        "subject": "' + random_data['random_subject'] + '", \
-        "topic": "' + random_data['random_topic'] + '", \
-        "category": "' + random_data['random_category'] + '", \
-        "keywords": ["happy"], \
-        "student_expectations": ["' + random_data['random_student_expectations'] + '"], \
-        "difficulty": "'+ random_data['random_difficulty'] + '", \
-        "points": 2, \
-        "response_type": "' + random_data['random_response_type'] + '", \
-        "question_content": "'+ random_data['random_question_content'] + '", \
-        "question_img": "", \
-        "update_note": "'+ random_data['random_question_content'] + '", \
-        "options": [ \
-            { \
-            "letter": "' + random_data['random_letter']+ '", \
-            "content": "' + random_data['random_question_content'] + '", \
-            "image": "", \
-            "unit": "' + random_data['random_unit'] + '", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
+    random_payload = get_valid_successful_mathworld_payload()
 
     header: dict = req.create_basic_headers(token=get_admin_token)
-    url: str = f"{req.base_url}/question/update/mathworld/{sql_classic_invalid_uuid}"
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}\\tests\\images", "image_01.jpg")
-    response = requests.request("PUT", url, headers=header, data=random_payload, files=upload_file)
+    url: str = f"{req.base_url}/v1/questions/update/{sql_classic_invalid_id}"
+    # upload_file: list = common.set_image_file(f"{CURRENT_DIR}\\tests\\images", "image_01.jpg")
+    response = requests.request("PUT", url, headers=header, json=random_payload)
     updated_response: dict = json.loads(response.text)
     time.sleep(1)
     assert_that(response.status_code).is_equal_to(400)
