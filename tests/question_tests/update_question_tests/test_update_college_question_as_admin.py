@@ -37,7 +37,6 @@ def test_update_college_question(get_admin_token):
     random_data: dict = common.get_random_payload_data()
     college_classic = get_db().question_collection.find_one({ "question_type": "College Level" })
     sql_classic_id: ObjectId = college_classic['_id']
-    print(sql_classic_id)
     sql_classic_question_type: str = college_classic['question_type']
     sql_classic_response_type: str = college_classic['response_type']
     sql_classic_question: str = college_classic['question_content']
@@ -48,8 +47,9 @@ def test_update_college_question(get_admin_token):
     url: str = f"{req.base_url}/v1/questions/update/{sql_classic_id}"
     # upload_file: list = common.set_image_file(f"{CURRENT_DIR}\\tests\\images", "image_01.jpg")     
     time.sleep(1)
-    response = requests.request("PUT", url, headers=header, json=random_payload)
+    response = requests.request("PUT", url, headers=header, data=json.dumps(random_payload))
     updated_response: dict = json.loads(response.text)
+    print(updated_response)
     assert_that(response.status_code).is_equal_to(200)
     assert_that(updated_response['detail']).is_equal_to("Successfully updated")
     assert_that(str(updated_response['_id'])).is_equal_to(str(sql_classic_id))
@@ -81,7 +81,7 @@ def test_update_college_question_invalid_id(get_admin_token):
     
     url: str = f"{req.base_url}/v1/questions/update/{sql_classic_invalid_id}" 
     # upload_file: list = common.set_image_file(f"{CURRENT_DIR}\\tests\\images", "image_01.jpg")           
-    response = requests.request("PUT", url, headers=header, json=random_payload)  
+    response = requests.request("PUT", url, headers=header, data=json.dumps(random_payload))
     updated_response: dict = json.loads(response.text)  
     time.sleep(1)
     assert_that(response.status_code).is_equal_to(400)

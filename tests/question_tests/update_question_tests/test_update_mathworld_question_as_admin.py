@@ -46,7 +46,7 @@ def test_update_mathworld_question(get_admin_token):
     header: dict = req.create_basic_headers(token=get_admin_token)
     url: str = f"{req.base_url}/v1/questions/update/{sql_classic_id}"
     # upload_file: list = common.set_image_file(f"{CURRENT_DIR}\\tests\\images", "image_01.jpg")
-    response = requests.request("PUT", url, headers=header, json=random_payload)
+    response = requests.request("PUT", url, headers=header, data=json.dumps(random_payload))
     updated_response: dict = json.loads(response.text)
     time.sleep(2)
     assert_that(response.status_code).is_equal_to(200)
@@ -79,7 +79,7 @@ def test_update_mathworld_question_invalid_id(get_admin_token):
     header: dict = req.create_basic_headers(token=get_admin_token)
     url: str = f"{req.base_url}/v1/questions/update/{sql_classic_invalid_id}"
     # upload_file: list = common.set_image_file(f"{CURRENT_DIR}\\tests\\images", "image_01.jpg")
-    response = requests.request("PUT", url, headers=header, json=random_payload)
+    response = requests.request("PUT", url, headers=header, data=json.dumps(random_data))
     updated_response: dict = json.loads(response.text)
     time.sleep(1)
     assert_that(response.status_code).is_equal_to(400)

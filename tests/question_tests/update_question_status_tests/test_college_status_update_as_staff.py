@@ -1,3 +1,4 @@
+from bson import ObjectId
 from pytest import fixture
 import pdb, requests
 import os, sys, json
@@ -11,9 +12,10 @@ import logging as logger, pytest
 import lib.common as common
 import lib.generate_token as generate_token
 from lib.requester import Requester
-from lib.mw_sql import execute_query
 from lib.common import get_random_question, get_current_yyyy_mm, get_random_payload_data
 import random
+from tests.payloads.valid_question_payloads import get_valid_successful_college_payload
+from lib.mw_db import get_db
 from assertpy import assert_that
 
 
@@ -41,49 +43,29 @@ def test_status_pending_to_approved(get_staff_token):
     update_status: str = 'Approved'
     question_type: str = "College Level"
     header: dict = req.create_basic_headers(token=get_staff_token)        
-    create_url = f"{req.base_url}/question/college/create"
+    create_url = f"{req.base_url}/v1/questions/create"
     question1 = common.get_random_question()
     question2 = common.get_random_question()
 
-    payload = {'data': '{ \
-        "question_type": "college level", \
-        "classification": "SAT", \
-        "test_code": "a1", \
-        "keywords": ["2"], \
-        "response_type": "Open Response Exact", \
-        "question_content": "' + question1 + '", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "' + question2 + '", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
+    payload = get_valid_successful_college_payload()
 
     patch_payload = json.dumps({
       "status": f"{update_status}",
-      "update_note": f"{random_data['random_sentence']}",
-      "reviewed_by": f"{random_data['random_name']}",
-      "reviewed_at": f"{random_data['current_datetime']}"
+      "update_note": f"{random_data['random_sentence']}"
     })
        
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
-    classic_response = requests.request("POST", create_url, headers=header, data=payload, files=upload_file)
-    json_classic_response = json.loads(classic_response.text)        
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE uuid = '{json_classic_response['question_uuid']}'")
-    classic_status : str = questions_returned[0][8]
+    
+    classic_response = requests.request("POST", create_url, headers=header, json=payload)
+    json_classic_response = json.loads(classic_response.text)
+    questions_returned: dict = get_db().question_collection.find_one({"_id": ObjectId(json_classic_response['question_id'])})
+    classic_status : str = questions_returned['question_status']
     assert_that(classic_status).is_equal_to("Pending")
-    patch_url: str = f"{req.base_url}/question/update/question_status/{json_classic_response['question_uuid']}"
+    patch_url: str = f"{req.base_url}/v1/questions/update/question_status/{json_classic_response['question_id']}"
     patch_response = requests.request("PATCH", patch_url, headers=header, data=patch_payload)
     json_patch_response = json.loads(patch_response.text)
 
     assert_that(patch_response.status_code).is_equal_to(200)
-    assert_that(json_patch_response['data']['status']).is_equal_to('Approved')
+    assert_that(json_patch_response['data']['question_status']).is_equal_to('Approved')
     assert_that(json_patch_response['data']['question_type']).is_equal_to(question_type)
    
 # ---------------------------------------------------------------------------------
@@ -91,105 +73,59 @@ def test_status_pending_to_approved(get_staff_token):
 @pytest.mark.tc_002
 def test_status_pending_to_reported(get_staff_token):
     req = Requester()    
+    create_url = f"{req.base_url}/v1/questions/create"
     random_data: dict = common.get_random_payload_data()    
     update_status: str = 'Reported'
     question_type: str = "College Level"
-    header: dict = req.create_basic_headers(token=get_staff_token)    
-    create_url = f"{req.base_url}/question/college/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
-    payload = {'data': '{ \
-        "question_type": "college level", \
-        "classification": "SAT", \
-        "test_code": "a1", \
-        "keywords": ["2"], \
-        "response_type": "Open Response Exact", \
-        "question_content": "' + question1 + '", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "' + question2 + '", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
+    header: dict = req.create_basic_headers(token=get_staff_token)
+    
+    payload = get_valid_successful_college_payload()
 
     patch_payload = json.dumps({
       "status": f"{update_status}",
-      "update_note": f"{random_data['random_sentence']}",
-      "reviewed_by": f"{random_data['random_name']}",
-      "reviewed_at": f"{random_data['current_datetime']}"
+      "update_note": f"{random_data['random_sentence']}"
     })
-      
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
-    classic_response = requests.request("POST", create_url, headers=header, data=payload, files=upload_file)
-    json_classic_response = json.loads(classic_response.text)        
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE uuid = '{json_classic_response['question_uuid']}'")
-    classic_status : str = questions_returned[0][8]
+       
+    
+    classic_response = requests.request("POST", create_url, headers=header, json=payload)
+    json_classic_response = json.loads(classic_response.text)
+    questions_returned: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "question_status": "Pending"})
+    classic_status : str = questions_returned['question_status']
     assert_that(classic_status).is_equal_to("Pending")
-    patch_url: str = f"{req.base_url}/question/update/question_status/{json_classic_response['question_uuid']}"
+    patch_url: str = f"{req.base_url}/v1/questions/update/question_status/{json_classic_response['question_id']}"
     patch_response = requests.request("PATCH", patch_url, headers=header, data=patch_payload)
     json_patch_response = json.loads(patch_response.text)
 
     assert_that(patch_response.status_code).is_equal_to(200)
-    assert_that(json_patch_response['data']['status']).is_equal_to('Reported')
+    assert_that(json_patch_response['data']['question_status']).is_equal_to('Reported')
     assert_that(json_patch_response['data']['question_type']).is_equal_to(question_type)
 
 
 @pytest.mark.tc_003
 def test_status_pending_to_rejected_by_payload(get_staff_token):
     req = Requester()    
+    create_url = f"{req.base_url}/v1/questions/create"
     random_data: dict = common.get_random_payload_data()    
     update_status: str = 'Rejected'
     question_type: str = "College Level"
-    header: dict = req.create_basic_headers(token=get_staff_token)
-    create_url = f"{req.base_url}/question/college/create"
-    question1 = common.get_random_question()
-    question2 = common.get_random_question()
-    payload = {'data': '{ \
-        "question_type": "college level", \
-        "classification": "SAT", \
-        "test_code": "a1", \
-        "keywords": ["2"], \
-        "response_type": "Open Response Exact", \
-        "question_content": "' + question1 + '", \
-        "question_img": "", \
-        "options": [ \
-            { \
-            "letter": "a", \
-            "content": "' + question2 + '", \
-            "image": "", \
-            "unit": "pound", \
-            "is_answer": true \
-            } \
-        ] \
-        }'}
-
+    header: dict = req.create_basic_headers(token=get_staff_token)    
     patch_payload = json.dumps({
       "status": f"{update_status}",
-      "update_note": f"{random_data['random_sentence']}",
-      "reviewed_by": f"{random_data['random_name']}",
-      "reviewed_at": f"{random_data['current_datetime']}"
+      "update_note": f"{random_data['random_sentence']}"
     })
-
-    json_patch_payload = json.loads(patch_payload)        
-    upload_file: list = common.set_image_file(f"{CURRENT_DIR}", "image_01.jpg")
-    classic_response = requests.request("POST", create_url, headers=header, data=payload, files=upload_file)
-    json_classic_response = json.loads(classic_response.text)        
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE uuid = '{json_classic_response['question_uuid']}'")
-    classic_status : str = questions_returned[0][8]
-    assert_that(classic_status).is_equal_to("Pending")
-    patch_url: str = f"{req.base_url}/question/update/question_status/{json_classic_response['question_uuid']}"
+                
+    questions_returned: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "question_status": "Rejected"})
+    classic_id : str = questions_returned['_id']
+    classic_status : str = questions_returned['question_status']
+    assert_that(classic_status).is_equal_to("Rejected")
+    patch_url: str = f"{req.base_url}/v1/questions/update/question_status/{classic_id}"
     patch_response = requests.request("PATCH", patch_url, headers=header, data=patch_payload)
     json_patch_response = json.loads(patch_response.text)
 
     assert_that(patch_response.status_code).is_equal_to(200)
-    assert_that(json_patch_response['data']['status']).is_equal_to('Rejected')
+    assert_that(json_patch_response['data']['question_status']).is_equal_to('Rejected')
     assert_that(json_patch_response['data']['question_type']).is_equal_to(question_type)
 
 # ---------------------------------------------------------------------------------
@@ -206,27 +142,25 @@ def test_status_approved_to_pending(get_staff_token):
     current_status: str = 'Approved'    
     update_status: str = 'Pending'
     question_type: str = "College Level"
-    approved_classic: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE question_type = '{question_type}' AND status = '{current_status}' LIMIT 1")   
-    sql_classic_uuid: str = approved_classic[0][0] 
+    approved_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "question_status": current_status})   
+    sql_classic_id: str = approved_classic['_id']
     header: dict = req.create_basic_headers(token=get_staff_token)
     patch_payload = json.dumps({
       "status": f"{update_status}",
-      "update_note": f"{random_data['random_sentence']}",
-      "reviewed_by": f"{random_data['random_name']}",
-      "reviewed_at": f"{random_data['current_datetime']}"
+      "update_note": f"{random_data['random_sentence']}"
     })
       
-    patch_url: str = f"{req.base_url}/question/update/question_status/{sql_classic_uuid}"
+    patch_url: str = f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
     patch_response = requests.request("PATCH", patch_url, headers=header, data=patch_payload)
     json_patch_response = json.loads(patch_response.text)
 
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE uuid = '{sql_classic_uuid}'")
-    status_updated : str = questions_returned[0][8]    
+    questions_returned: dict = get_db().question_collection.find_one(
+        {"_id": ObjectId(sql_classic_id)})
+    status_updated : str = questions_returned['question_status']   
     assert_that(patch_response.status_code).is_equal_to(200)
     assert_that(update_status).is_equal_to(status_updated)
-    assert_that(json_patch_response['data']['status']).is_equal_to(update_status)
+    assert_that(json_patch_response['data']['question_status']).is_equal_to(update_status)
 
 @pytest.mark.tc_005
 def test_status_rejected_to_pending(get_staff_token):
@@ -235,27 +169,25 @@ def test_status_rejected_to_pending(get_staff_token):
     current_status: str = 'Rejected'    
     update_status: str = 'Pending'
     question_type: str = "College Level"
-    approved_classic: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE question_type = '{question_type}' AND status = '{current_status}' LIMIT 1")   
-    sql_classic_uuid: str = approved_classic[0][0] 
+    approved_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "question_status": current_status})  
+    sql_classic_id: str = approved_classic['_id'] 
     header: dict = req.create_basic_headers(token=get_staff_token)
     patch_payload = json.dumps({
       "status": f"{update_status}",
       "update_note": f"{random_data['random_sentence']}",
-      "reviewed_by": f"{random_data['random_name']}",
-      "reviewed_at": f"{random_data['current_datetime']}"
     })
 
-    patch_url: str = f"{req.base_url}/question/update/question_status/{sql_classic_uuid}"
+    patch_url: str = f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
     patch_response = requests.request("PATCH", patch_url, headers=header, data=patch_payload)
     json_patch_response = json.loads(patch_response.text)
 
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE uuid = '{sql_classic_uuid}'")
-    status_updated : str = questions_returned[0][8]    
+    questions_returned: dict = get_db().question_collection.find_one(
+        {"_id": ObjectId(sql_classic_id)})
+    status_updated : str = questions_returned['question_status']    
     assert_that(patch_response.status_code).is_equal_to(200)
     assert_that(update_status).is_equal_to(status_updated)
-    assert_that(json_patch_response['data']['status']).is_equal_to(update_status)
+    assert_that(json_patch_response['data']['question_status']).is_equal_to(update_status)
 
 @pytest.mark.tc_005
 def test_status_reported_to_pending(get_staff_token):
@@ -264,27 +196,25 @@ def test_status_reported_to_pending(get_staff_token):
     current_status: str = 'Reported'    
     update_status: str = 'Pending'
     question_type: str = "College Level"
-    approved_classic: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE question_type = '{question_type}' AND status = '{current_status}' LIMIT 1")   
-    sql_classic_uuid: str = approved_classic[0][0] 
+    approved_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "question_status": current_status})   
+    sql_classic_id: str = approved_classic['_id'] 
     header: dict = req.create_basic_headers(token=get_staff_token)
     patch_payload = json.dumps({
       "status": f"{update_status}",
-      "update_note": f"{random_data['random_sentence']}",
-      "reviewed_by": f"{random_data['random_name']}",
-      "reviewed_at": f"{random_data['current_datetime']}"
+      "update_note": f"{random_data['random_sentence']}"
     })
   
-    patch_url: str = f"{req.base_url}/question/update/question_status/{sql_classic_uuid}"
+    patch_url: str = f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
     patch_response = requests.request("PATCH", patch_url, headers=header, data=patch_payload)
     json_patch_response = json.loads(patch_response.text)
 
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE uuid = '{sql_classic_uuid}'")
-    status_updated : str = questions_returned[0][8]    
+    questions_returned: dict = get_db().question_collection.find_one(
+        {"_id": ObjectId(sql_classic_id)})
+    status_updated : str = questions_returned['question_status']    
     assert_that(patch_response.status_code).is_equal_to(200)
     assert_that(update_status).is_equal_to(status_updated)
-    assert_that(json_patch_response['data']['status']).is_equal_to(update_status)
+    assert_that(json_patch_response['data']['question_status']).is_equal_to(update_status)
  
 
 # ---------------------------------------------------------------------------------
@@ -301,27 +231,25 @@ def test_status_approved_to_approved(get_staff_token):
     current_status: str = 'Approved'    
     update_status: str = 'Approved'
     question_type: str = "College Level"
-    approved_classic: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE question_type = '{question_type}' AND status = '{current_status}' LIMIT 1")   
-    sql_classic_uuid: str = approved_classic[0][0] 
+    approved_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "question_status": current_status})   
+    sql_classic_id: str = approved_classic['_id'] 
     header: dict = req.create_basic_headers(token=get_staff_token)
     patch_payload = json.dumps({
       "status": f"{update_status}",
-      "update_note": f"{random_data['random_sentence']}",
-      "reviewed_by": f"{random_data['random_name']}",
-      "reviewed_at": f"{random_data['current_datetime']}"
+      "update_note": f"{random_data['random_sentence']}"
     })
    
-    patch_url: str = f"{req.base_url}/question/update/question_status/{sql_classic_uuid}"
+    patch_url: str = f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
     patch_response = requests.request("PATCH", patch_url, headers=header, data=patch_payload)
     json_patch_response = json.loads(patch_response.text)
 
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE uuid = '{sql_classic_uuid}'")
-    status_updated : str = questions_returned[0][8]    
+    questions_returned: dict = get_db().question_collection.find_one(
+        {"_id": ObjectId(sql_classic_id)})
+    status_updated : str = questions_returned['question_status']    
     assert_that(patch_response.status_code).is_equal_to(200)
     assert_that(update_status).is_equal_to(status_updated)
-    assert_that(json_patch_response['data']['status']).is_equal_to(update_status)
+    assert_that(json_patch_response['data']['question_status']).is_equal_to(update_status)
 
 @pytest.mark.tc_007
 def test_status_rejected_to_approved(get_staff_token):
@@ -330,27 +258,25 @@ def test_status_rejected_to_approved(get_staff_token):
     current_status: str = 'Rejected'    
     update_status: str = 'Approved'
     question_type: str = "College Level"
-    approved_classic: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE question_type = '{question_type}' AND status = '{current_status}' LIMIT 1")   
-    sql_classic_uuid: str = approved_classic[0][0] 
+    approved_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "question_status": current_status})   
+    sql_classic_id: str = approved_classic['_id'] 
     header: dict = req.create_basic_headers(token=get_staff_token)
     patch_payload = json.dumps({
       "status": f"{update_status}",
-      "update_note": f"{random_data['random_sentence']}",
-      "reviewed_by": f"{random_data['random_name']}",
-      "reviewed_at": f"{random_data['current_datetime']}"
+      "update_note": f"{random_data['random_sentence']}"
     })
 
-    patch_url: str = f"{req.base_url}/question/update/question_status/{sql_classic_uuid}"
+    patch_url: str = f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
     patch_response = requests.request("PATCH", patch_url, headers=header, data=patch_payload)
     json_patch_response = json.loads(patch_response.text)
 
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE uuid = '{sql_classic_uuid}'")
-    updated_status : str = questions_returned[0][8]    
+    questions_returned: dict = get_db().question_collection.find_one(
+        {"_id": ObjectId(sql_classic_id)})
+    updated_status : str = questions_returned['question_status']    
     assert_that(patch_response.status_code).is_equal_to(200)
     assert_that(update_status).is_equal_to(updated_status)
-    assert_that(json_patch_response['data']['status']).is_equal_to(update_status)
+    assert_that(json_patch_response['data']['question_status']).is_equal_to(update_status)
 
 # ---------------------------------------------------------------------------------
 # Approved -> Reported
@@ -364,29 +290,27 @@ def test_status_approved_to_reported(get_staff_token):
     req = Requester()    
     random_data: dict = common.get_random_payload_data()
     current_status: str = 'Approved'    
-    update_status: str = 'Approved'
+    update_status: str = 'Reported'
     question_type: str = "College Level"
-    approved_classic: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE question_type = '{question_type}' AND status = '{current_status}' LIMIT 1")   
-    sql_classic_uuid: str = approved_classic[0][0] 
+    approved_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "question_status": current_status})   
+    sql_classic_id: str = approved_classic['_id'] 
     header: dict = req.create_basic_headers(token=get_staff_token)
     patch_payload = json.dumps({
       "status": f"{update_status}",
-      "update_note": f"{random_data['random_sentence']}",
-      "reviewed_by": f"{random_data['random_name']}",
-      "reviewed_at": f"{random_data['current_datetime']}"
+      "update_note": f"{random_data['random_sentence']}"
     })
 
-    patch_url: str = f"{req.base_url}/question/update/question_status/{sql_classic_uuid}"
+    patch_url: str = f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
     patch_response = requests.request("PATCH", patch_url, headers=header, data=patch_payload)
     json_patch_response = json.loads(patch_response.text)
 
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE uuid = '{sql_classic_uuid}'")
-    updated_status : str = questions_returned[0][8]    
+    questions_returned: dict = get_db().question_collection.find_one(
+        {"_id": ObjectId(sql_classic_id)})
+    updated_status : str = questions_returned['question_status']    
     assert_that(patch_response.status_code).is_equal_to(200)
-    assert_that(updated_status).is_equal_to('Approved')
-    assert_that(json_patch_response['data']['status']).is_equal_to(update_status)
+    assert_that(updated_status).is_equal_to('Reported')
+    assert_that(json_patch_response['data']['question_status']).is_equal_to(update_status)
 
 @pytest.mark.tc_009
 def test_status_rejected_to_reported(get_staff_token):
@@ -395,27 +319,25 @@ def test_status_rejected_to_reported(get_staff_token):
     current_status: str = 'Rejected'    
     update_status: str = 'Reported'
     question_type: str = "College Level"
-    approved_classic: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE question_type = '{question_type}' AND status = '{current_status}' LIMIT 1")   
-    sql_classic_uuid: str = approved_classic[0][0] 
+    approved_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "question_status": current_status})   
+    sql_classic_id: str = approved_classic['_id'] 
     header: dict = req.create_basic_headers(token=get_staff_token)
     patch_payload = json.dumps({
       "status": f"{update_status}",
-      "update_note": f"{random_data['random_sentence']}",
-      "reviewed_by": f"{random_data['random_name']}",
-      "reviewed_at": f"{random_data['current_datetime']}"
+      "update_note": f"{random_data['random_sentence']}"
     })
 
-    patch_url: str = f"{req.base_url}/question/update/question_status/{sql_classic_uuid}"
+    patch_url: str = f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
     patch_response = requests.request("PATCH", patch_url, headers=header, data=patch_payload)
     json_patch_response = json.loads(patch_response.text)
 
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE uuid = '{sql_classic_uuid}'")
-    status_updated : str = questions_returned[0][8]    
+    questions_returned: dict = get_db().question_collection.find_one(
+        {"_id": ObjectId(sql_classic_id)})
+    status_updated : str = questions_returned['question_status']    
     assert_that(patch_response.status_code).is_equal_to(200)
     assert_that(update_status).is_equal_to(status_updated)
-    assert_that(json_patch_response['data']['status']).is_equal_to(update_status)
+    assert_that(json_patch_response['data']['question_status']).is_equal_to(update_status)
 
 @pytest.mark.tc_010
 def test_status_reported_to_approved(get_staff_token):
@@ -424,27 +346,25 @@ def test_status_reported_to_approved(get_staff_token):
     current_status: str = 'Pending'    
     update_status: str = 'Approved'
     question_type: str = "College Level"
-    approved_classic: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE question_type = '{question_type}' AND status = '{current_status}' LIMIT 1")   
-    sql_classic_uuid: str = approved_classic[0][0] 
+    approved_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "question_status": current_status})   
+    sql_classic_id: str = approved_classic['_id'] 
     header: dict = req.create_basic_headers(token=get_staff_token)
     patch_payload = json.dumps({
       "status": f"{update_status}",
-      "update_note": f"{random_data['random_sentence']}",
-      "reviewed_by": f"{random_data['random_name']}",
-      "reviewed_at": f"{random_data['current_datetime']}"
+      "update_note": f"{random_data['random_sentence']}"
     })
 
-    patch_url: str = f"{req.base_url}/question/update/question_status/{sql_classic_uuid}"
+    patch_url: str = f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
     patch_response = requests.request("PATCH", patch_url, headers=header, data=patch_payload)
     json_patch_response = json.loads(patch_response.text)
 
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE uuid = '{sql_classic_uuid}'")
-    status_updated : str = questions_returned[0][8]    
+    questions_returned: dict = get_db().question_collection.find_one(
+        {"_id": ObjectId(sql_classic_id)})
+    status_updated : str = questions_returned['question_status']    
     assert_that(patch_response.status_code).is_equal_to(200)
     assert_that(update_status).is_equal_to(status_updated)
-    assert_that(json_patch_response['data']['status']).is_equal_to(update_status)
+    assert_that(json_patch_response['data']['question_status']).is_equal_to(update_status)
 
 @pytest.mark.tc_011
 def test_status_pending_to_pending(get_staff_token):
@@ -453,27 +373,25 @@ def test_status_pending_to_pending(get_staff_token):
     current_status: str = 'Pending'    
     update_status: str = 'Approved'
     question_type: str = "College Level"
-    approved_classic: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE question_type = '{question_type}' AND status = '{current_status}' LIMIT 1")   
-    sql_classic_uuid: str = approved_classic[0][0] 
+    approved_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "question_status": current_status})   
+    sql_classic_id: str = approved_classic['_id'] 
     header: dict = req.create_basic_headers(token=get_staff_token)
     patch_payload = json.dumps({
       "status": f"{update_status}",
-      "update_note": f"{random_data['random_sentence']}",
-      "reviewed_by": f"{random_data['random_name']}",
-      "reviewed_at": f"{random_data['current_datetime']}"
+      "update_note": f"{random_data['random_sentence']}"
     })
   
-    patch_url: str = f"{req.base_url}/question/update/question_status/{sql_classic_uuid}"
+    patch_url: str = f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
     patch_response = requests.request("PATCH", patch_url, headers=header, data=patch_payload)
     json_patch_response = json.loads(patch_response.text)
 
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE uuid = '{sql_classic_uuid}'")
-    status_updated : str = questions_returned[0][8]    
+    questions_returned: dict = get_db().question_collection.find_one(
+        {"_id": ObjectId(sql_classic_id)})
+    status_updated : str = questions_returned['question_status']    
     assert_that(patch_response.status_code).is_equal_to(200)
     assert_that(update_status).is_equal_to(status_updated)
-    assert_that(json_patch_response['data']['status']).is_equal_to(update_status) 
+    assert_that(json_patch_response['data']['question_status']).is_equal_to(update_status) 
 
 # ---------------------------------------------------------------------------------
 # Approved -> Rejected
@@ -489,27 +407,25 @@ def test_status_approved_to_rejected(get_staff_token):
     current_status: str = 'Approved'    
     update_status: str = 'Rejected'
     question_type: str = "College Level"
-    approved_classic: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE question_type = '{question_type}' AND status = '{current_status}' LIMIT 1")   
-    sql_classic_uuid: str = approved_classic[0][0] 
+    approved_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "question_status": current_status})   
+    sql_classic_id: str = approved_classic['_id'] 
     header: dict = req.create_basic_headers(token=get_staff_token)
     patch_payload = json.dumps({
       "status": f"{update_status}",
-      "update_note": f"{random_data['random_sentence']}",
-      "reviewed_by": f"{random_data['random_name']}",
-      "reviewed_at": f"{random_data['current_datetime']}"
+      "update_note": f"{random_data['random_sentence']}"
     })
       
-    patch_url: str = f"{req.base_url}/question/update/question_status/{sql_classic_uuid}"
+    patch_url: str = f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
     patch_response = requests.request("PATCH", patch_url, headers=header, data=patch_payload)
     json_patch_response = json.loads(patch_response.text)
 
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE uuid = '{sql_classic_uuid}'")
-    status_updated : str = questions_returned[0][8]    
+    questions_returned: dict = get_db().question_collection.find_one(
+        {"_id": ObjectId(sql_classic_id)})
+    status_updated : str = questions_returned['question_status']    
     assert_that(patch_response.status_code).is_equal_to(200)
     assert_that(update_status).is_equal_to(status_updated)
-    assert_that(json_patch_response['data']['status']).is_equal_to(update_status)
+    assert_that(json_patch_response['data']['question_status']).is_equal_to(update_status)
 
 @pytest.mark.tc_013
 def test_status_rejected_to_rejected(get_staff_token):
@@ -518,27 +434,25 @@ def test_status_rejected_to_rejected(get_staff_token):
     current_status: str = 'Rejected'    
     update_status: str = 'Rejected'
     question_type: str = "College Level"
-    approved_classic: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE question_type = '{question_type}' AND status = '{current_status}' LIMIT 1")   
-    sql_classic_uuid: str = approved_classic[0][0] 
+    approved_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "question_status": current_status})   
+    sql_classic_id: str = approved_classic['_id'] 
     header: dict = req.create_basic_headers(token=get_staff_token)
     patch_payload = json.dumps({
       "status": f"{update_status}",
-      "update_note": f"{random_data['random_sentence']}",
-      "reviewed_by": f"{random_data['random_name']}",
-      "reviewed_at": f"{random_data['current_datetime']}"
+      "update_note": f"{random_data['random_sentence']}"
     })
      
-    patch_url: str = f"{req.base_url}/question/update/question_status/{sql_classic_uuid}"
+    patch_url: str = f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
     patch_response = requests.request("PATCH", patch_url, headers=header, data=patch_payload)
     json_patch_response = json.loads(patch_response.text)
 
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE uuid = '{sql_classic_uuid}'")
-    status_updated : str = questions_returned[0][8]    
+    questions_returned: dict = get_db().question_collection.find_one(
+        {"_id": ObjectId(sql_classic_id)})
+    status_updated : str = questions_returned['question_status']    
     assert_that(patch_response.status_code).is_equal_to(200)
     assert_that(update_status).is_equal_to(status_updated)
-    assert_that(json_patch_response['data']['status']).is_equal_to(update_status)
+    assert_that(json_patch_response['data']['question_status']).is_equal_to(update_status)
 
 @pytest.mark.tc_014
 def test_status_reported_to_rejected(get_staff_token):
@@ -547,27 +461,25 @@ def test_status_reported_to_rejected(get_staff_token):
     current_status: str = 'Reported'    
     update_status: str = 'Rejected'
     question_type: str = "College Level"
-    approved_classic: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE question_type = '{question_type}' AND status = '{current_status}' LIMIT 1")   
-    sql_classic_uuid: str = approved_classic[0][0] 
+    approved_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "question_status": current_status})   
+    sql_classic_id: str = approved_classic['_id'] 
     header: dict = req.create_basic_headers(token=get_staff_token)
     patch_payload = json.dumps({
       "status": f"{update_status}",
-      "update_note": f"{random_data['random_sentence']}",
-      "reviewed_by": f"{random_data['random_name']}",
-      "reviewed_at": f"{random_data['current_datetime']}"
+      "update_note": f"{random_data['random_sentence']}"
     })
         
-    patch_url: str = f"{req.base_url}/question/update/question_status/{sql_classic_uuid}"
+    patch_url: str = f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
     patch_response = requests.request("PATCH", patch_url, headers=header, data=patch_payload)
     json_patch_response = json.loads(patch_response.text)
 
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE uuid = '{sql_classic_uuid}'")
-    status_updated : str = questions_returned[0][8]    
+    questions_returned: dict = get_db().question_collection.find_one(
+        {"_id": ObjectId(sql_classic_id)})
+    status_updated : str = questions_returned['question_status']    
     assert_that(patch_response.status_code).is_equal_to(200)
     assert_that(update_status).is_equal_to(status_updated)
-    assert_that(json_patch_response['data']['status']).is_equal_to(update_status)
+    assert_that(json_patch_response['data']['question_status']).is_equal_to(update_status)
 
 @pytest.mark.tc_015
 def test_status_pending_to_rejected(get_staff_token):
@@ -576,24 +488,22 @@ def test_status_pending_to_rejected(get_staff_token):
     current_status: str = 'Pending'    
     update_status: str = 'Rejected'
     question_type: str = "College Level"
-    approved_classic: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE question_type = '{question_type}' AND status = '{current_status}' LIMIT 1")   
-    sql_classic_uuid: str = approved_classic[0][0] 
+    approved_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "question_status": current_status})   
+    sql_classic_id: str = approved_classic['_id'] 
     header: dict = req.create_basic_headers(token=get_staff_token)
     patch_payload = json.dumps({
       "status": f"{update_status}",
-      "update_note": f"{random_data['random_sentence']}",
-      "reviewed_by": f"{random_data['random_name']}",
-      "reviewed_at": f"{random_data['current_datetime']}"
+      "update_note": f"{random_data['random_sentence']}"
     })
      
-    patch_url: str = f"{req.base_url}/question/update/question_status/{sql_classic_uuid}"
+    patch_url: str = f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
     patch_response = requests.request("PATCH", patch_url, headers=header, data=patch_payload)
     json_patch_response = json.loads(patch_response.text)
 
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE uuid = '{sql_classic_uuid}'")
-    status_updated : str = questions_returned[0][8]    
+    questions_returned: dict = get_db().question_collection.find_one(
+        {"_id": ObjectId(sql_classic_id)})
+    status_updated : str = questions_returned['question_status']    
     assert_that(patch_response.status_code).is_equal_to(200)
     assert_that(update_status).is_equal_to(status_updated)
-    assert_that(json_patch_response['data']['status']).is_equal_to(update_status) 
+    assert_that(json_patch_response['data']['question_status']).is_equal_to(update_status) 
