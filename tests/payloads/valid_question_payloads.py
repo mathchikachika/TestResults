@@ -53,7 +53,7 @@ def get_valid_successful_staar_payload():
     return {
         "question_type": "STAAR",
         "grade_level": 3,
-        "release_date": "2024-02",
+        "release_date": "2023-02",
         "category": "1",
         "keywords": ["math"],
         "student_expectations": ["A.1(A)"],
