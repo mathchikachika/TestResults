@@ -73,6 +73,9 @@ class Education(BaseModel):
     year_started: str
     year_ended: str
 
+class EducationList(BaseModel):
+    education: List[Education]
+
 class Student(User):
     contact_person: ContactPerson
 

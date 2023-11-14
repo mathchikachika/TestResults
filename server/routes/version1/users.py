@@ -13,8 +13,12 @@ from server.models.account import (
 
 from server.models.users import (
     User,
+    Student,
+    Teacher,
     Registration,
-    UpdatedUserViaSubscriber
+    UpdatedUserViaSubscriber,
+    ContactPerson,
+    EducationList
 )
 
 router = APIRouter()
@@ -53,8 +57,9 @@ async def login(user: Registration):
 async def get_user_data(request: Request):
     try:
         user_id = request.state.user_details['uuid']
-        model = SubscriberAccount
-        projectionModel = SubscriberAccountResponseModel
+        role = request.state.user_details['role']
+        model = User
+        projectionModel =  Student if role == 'student' else Teacher if role == 'teacher' else User
 
         account = await model.find({"_id":ObjectId(user_id) }).project(projectionModel).to_list(None)
         if account:
@@ -132,19 +137,74 @@ async def change_password(request: Request, updated_password: UpdatedPassword):
         if str(e) == '400':
                 raise HTTPException(status.HTTP_400_BAD_REQUEST,
                                 detail="Wrong password")
+        
+@router.post("/forgot_password", dependencies=[Depends(JWTBearer(access_level='student'))], status_code=status.HTTP_200_OK)
+async def forgot_password(request: Request):
+    pass
 
 @router.patch("/update/student/contact_person", dependencies=[Depends(JWTBearer(access_level='student'))], status_code=status.HTTP_200_OK)
-async def update_class(request: Request):
-    pass
+async def update_contact_person(request: Request, updated_contact_person: ContactPerson ):
+    user_id = request.state.user_details['uuid']
+    role =  request.state.user_details['role']
+    if role != 'student':
+        raise HTTPException(status.HTTP_400_BAD_REQUEST,
+                        detail="User must be a student")
+    try:
+            fetched_account = await User.get(user_id)
+            if fetched_account:
+                account = await fetched_account.update(
+                                {'$set': {'contact_person': updated_contact_person,}},
+                            )
+                return {"message": "Successfully updated contact person"}
+            
+            raise HTTPException(status.HTTP_404_NOT_FOUND,
+                                detail="User not found") 
+    except Exception as e:
+        if str(e) == '404':
+                raise HTTPException(status.HTTP_404_NOT_FOUND,
+                                detail="User not found") 
+        
+        if 'Id must be of type PydanticObjectId' in str(e):
+                raise HTTPException(status.HTTP_404_NOT_FOUND,
+                                detail="User not found")
+            
+        raise HTTPException(status.HTTP_400_BAD_REQUEST,
+                                detail="An error occured: " + str(e))
 
 @router.patch("/update/teacher/education", dependencies=[Depends(JWTBearer(access_level='student'))], status_code=status.HTTP_200_OK)
-async def update_class(request: Request):
-    pass
+async def update_class(request: Request, updated_education: EducationList):    
+    user_id = request.state.user_details['uuid']
+    role =  request.state.user_details['role']
+    if role != 'teacher':
+        raise HTTPException(status.HTTP_400_BAD_REQUEST,
+                        detail="User must be a teacher")
+    try:
+            education_data = updated_education.model_dump();
+            print(education_data)
+            fetched_account = await User.get(user_id)
+            if fetched_account:
+                account = await fetched_account.update(
+                                {'$set': {'education': education_data['education'],}},
+                            )
+                return {"message": "Successfully updated education"}
+            
+            raise HTTPException(status.HTTP_404_NOT_FOUND,
+                                detail="User not found") 
+    except Exception as e:
+        if str(e) == '404':
+                raise HTTPException(status.HTTP_404_NOT_FOUND,
+                                detail="User not found") 
+        
+        if 'Id must be of type PydanticObjectId' in str(e):
+                raise HTTPException(status.HTTP_404_NOT_FOUND,
+                                detail="User not found")
+            
+        raise HTTPException(status.HTTP_400_BAD_REQUEST,
+                                detail="An error occured: " + str(e))
 
 @router.patch("/update/user_profile_picture", dependencies=[Depends(JWTBearer(access_level='student'))], status_code=status.HTTP_200_OK)
 async def update_class(request: Request):
     pass
-
 
 @router.delete("/delete/user_profile_picture", dependencies=[Depends(JWTBearer(access_level='student'))], status_code=status.HTTP_200_OK)
 async def update_class(request: Request):
