@@ -1,17 +1,19 @@
 from datetime import datetime
-from typing import Optional, List
-from pydantic import BaseModel, model_validator, validator, Field
-from beanie import Document
+from typing import List, Optional
+
 import pymongo
-from beanie import Indexed
+from beanie import Document, Indexed
+from pydantic import BaseModel, Field, model_validator, validator
+
 from server.models.validators.question_request_root_validators import (
-    validate_staar_fields, 
-    validate_college_fields, 
-    validate_mathworld_fields, 
-    validate_option_fields, 
-    validate_updated_question_fields, 
-    validate_updated_status_fields
+    validate_college_fields,
+    validate_mathworld_fields,
+    validate_option_fields,
+    validate_staar_fields,
+    validate_updated_question_fields,
+    validate_updated_status_fields,
 )
+
 
 class Activity(Document):
     title: str
@@ -19,18 +21,16 @@ class Activity(Document):
     staff_involved: str
     question_id: str
     staff_id: str
-    created_at:  Optional[datetime] = None
+    created_at: Optional[datetime] = None
 
-    @validator('created_at', pre=True, always=True)
+    @validator("created_at", pre=True, always=True)
     def set_created_at_now(v):
         return v or datetime.utcnow()
-    
+
     class Settings:
         name = "acitivity_collection"
-        indexes = [
-            [("question_id", 1)],
-            [("staff_id", 1)]
-        ]
+        indexes = [[("question_id", 1)], [("staff_id", 1)]]
+
 
 class Option(BaseModel):
     letter: str
@@ -38,7 +38,8 @@ class Option(BaseModel):
     image: Optional[str]
     unit: Optional[str]
     is_answer: bool
-    _validate_fields = model_validator(mode='before')(validate_option_fields)
+    _validate_fields = model_validator(mode="before")(validate_option_fields)
+
 
 class Question(Document):
     response_type: str
@@ -53,20 +54,18 @@ class Question(Document):
     reviewed_by: Optional[str] = None
     reviewed_at: Optional[datetime] = None
 
-    @validator('updated_at', pre=True, always=True)
+    @validator("updated_at", pre=True, always=True)
     def set_updated_at_now(v):
         return v or datetime.utcnow()
-    
-    @validator('created_at', pre=True, always=True)
+
+    @validator("created_at", pre=True, always=True)
     def set_created_at_now(v):
         return v or datetime.utcnow()
 
     class Settings:
         name = "question_collection"
-        indexes = [
-            [("response_type", 1)],
-            [("question_status", 1)]
-        ]
+        indexes = [[("response_type", 1)], [("question_status", 1)]]
+
 
 class StaarQuestion(Question):
     question_type: str
@@ -75,8 +74,8 @@ class StaarQuestion(Question):
     category: str
     student_expectations: List[str]
     keywords: List[str]
-    _validate_fields = model_validator(mode='before')(validate_staar_fields)
-    
+    _validate_fields = model_validator(mode="before")(validate_staar_fields)
+
     class Settings:
         name = "question_collection"
         indexes = [
@@ -94,8 +93,8 @@ class CollegeQuestion(Question):
     classification: str
     test_code: str
     keywords: List[str]
-    _validate_fields =model_validator(mode='before')(validate_college_fields)
-    
+    _validate_fields = model_validator(mode="before")(validate_college_fields)
+
     class Settings:
         name = "question_collection"
         indexes = [
@@ -115,8 +114,8 @@ class MathworldQuestion(Question):
     keywords: List[str]
     difficulty: str
     points: int
-    _validate_fields =model_validator(mode='before')(validate_mathworld_fields)
-    
+    _validate_fields = model_validator(mode="before")(validate_mathworld_fields)
+
     class Settings:
         name = "question_collection"
         indexes = [
@@ -132,21 +131,25 @@ class UpdatedStaarQuestion(StaarQuestion):
     updated_by: Optional[str] = None
     updated_at: Optional[datetime] = None
     options: List[Option]
-    _no_missing_update_fields =model_validator(mode='before')(validate_updated_question_fields)
+    _no_missing_update_fields = model_validator(mode="before")(
+        validate_updated_question_fields
+    )
 
-    @validator('updated_at', pre=True, always=True)
+    @validator("updated_at", pre=True, always=True)
     def set_updated_at_now(v):
         return v or datetime.utcnow()
 
 
 class UpdatedCollegeQuestion(CollegeQuestion):
-    update_note: str 
+    update_note: str
     updated_by: Optional[str] = None
     updated_at: Optional[datetime] = None
     options: List[Option]
-    _no_missing_update_fields =model_validator(mode='before')(validate_updated_question_fields)
+    _no_missing_update_fields = model_validator(mode="before")(
+        validate_updated_question_fields
+    )
 
-    @validator('updated_at', pre=True, always=True)
+    @validator("updated_at", pre=True, always=True)
     def set_updated_at_now(v):
         return v or datetime.utcnow()
 
@@ -156,9 +159,11 @@ class UpdatedMathworldQuestion(MathworldQuestion):
     updated_by: Optional[str] = None
     updated_at: Optional[datetime] = None
     options: List[Option]
-    _no_missing_update_fields =model_validator(mode='before')(validate_updated_question_fields)
+    _no_missing_update_fields = model_validator(mode="before")(
+        validate_updated_question_fields
+    )
 
-    @validator('updated_at', pre=True, always=True)
+    @validator("updated_at", pre=True, always=True)
     def set_updated_at_now(v):
         return v or datetime.utcnow()
 
@@ -168,21 +173,17 @@ class UpdateQuestionStatus(BaseModel):
     update_note: Optional[str] = None
     reviewed_by: Optional[str] = None
     reviewed_at: Optional[datetime] = None
-    _validate_fields =model_validator(mode='before')(validate_updated_status_fields)
+    _validate_fields = model_validator(mode="before")(validate_updated_status_fields)
 
-    @validator('reviewed_at', pre=True, always=True)
+    @validator("reviewed_at", pre=True, always=True)
     def set_updated_at_now(cls, v):
         return v or datetime.utcnow()
 
     class Config:
         json_schema_extra = {
-            "example": {
-                "status": "Approved",
-                "update_note": "Update message"
-            }
+            "example": {"status": "Approved", "update_note": "Update message"}
         }
-        
+
+
 def ErrorResponseModel(error, code, message):
     return {"error": error, "code": code, "message": message}
-
-

@@ -30,8 +30,8 @@ src\router\__pycache__
 venv
 \venv
 /venv
-archive\
-archive/
+archive
+
 # Compiled Java class files
 *.class
 

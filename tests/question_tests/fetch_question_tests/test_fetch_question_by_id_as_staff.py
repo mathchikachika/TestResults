@@ -15,103 +15,125 @@ import lib.common as common
 import lib.generate_token as generate_token
 from lib.requester import Requester
 
+
 @fixture(scope="module")
 def get_staff_token():
     print("\n---- Setup Test ----\n")
-    token = generate_token.generate_token(email="staffABC@gmail.com", password="Staff123!")
+    token = generate_token.generate_token(
+        email="staffABC@gmail.com", password="Staff123!"
+    )
     yield token
     print("\n\n---- Tear Down Test ----\n")
 
+
 @pytest.mark.tc_001  # stats = Pending
 def test_question_fetch_by_id_status_pending(get_staff_token):
-    req: Requester = Requester()    
+    req: Requester = Requester()
     headers: dict = req.create_basic_headers(token=get_staff_token)
     question_status: str = "Pending"
-    questions_returned: dict = get_db().question_collection.find_one({"question_status": question_status})
-    sql_response_id: str = questions_returned['_id']
-    url: str = f"{req.base_url}/v1/questions/{sql_response_id}"    
+    questions_returned: dict = get_db().question_collection.find_one(
+        {"question_status": question_status}
+    )
+    sql_response_id: str = questions_returned["_id"]
+    url: str = f"{req.base_url}/v1/questions/{sql_response_id}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     question: dict = json.loads(response.text)
-    assert question['question']['id'] == str(questions_returned['_id'])
-    
+    assert question["question"]["id"] == str(questions_returned["_id"])
 
-@pytest.mark.tc_002 # status = Rejected
+
+@pytest.mark.tc_002  # status = Rejected
 def test_question_fetch_by_id_status_rejected(get_staff_token):
-    req: Requester = Requester()    
+    req: Requester = Requester()
     headers: dict = req.create_basic_headers(token=get_staff_token)
     question_status: str = "Rejected"
-    questions_returned: dict = get_db().question_collection.find_one({"question_status": question_status})
-    sql_response_id: str = questions_returned['_id']
-    url: str = f"{req.base_url}/v1/questions/{sql_response_id}"    
+    questions_returned: dict = get_db().question_collection.find_one(
+        {"question_status": question_status}
+    )
+    sql_response_id: str = questions_returned["_id"]
+    url: str = f"{req.base_url}/v1/questions/{sql_response_id}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     question: dict = json.loads(response.text)
-    assert question['question']['id'] == str(questions_returned['_id'])
+    assert question["question"]["id"] == str(questions_returned["_id"])
 
-@pytest.mark.tc_003  # status = Approved 
+
+@pytest.mark.tc_003  # status = Approved
 def test_question_fetch_by_id_status_approved(get_staff_token):
-    req: Requester = Requester()    
+    req: Requester = Requester()
     headers: dict = req.create_basic_headers(token=get_staff_token)
     question_status: str = "Approved"
-    questions_returned: dict = get_db().question_collection.find_one({"question_status": question_status})
-    sql_response_id: str = questions_returned['_id']
-    url: str = f"{req.base_url}/v1/questions/{sql_response_id}"    
+    questions_returned: dict = get_db().question_collection.find_one(
+        {"question_status": question_status}
+    )
+    sql_response_id: str = questions_returned["_id"]
+    url: str = f"{req.base_url}/v1/questions/{sql_response_id}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     question: dict = json.loads(response.text)
-    assert question['question']['id'] == str(questions_returned['_id'])
+    assert question["question"]["id"] == str(questions_returned["_id"])
 
-@pytest.mark.tc_004  # status = Approved 
+
+@pytest.mark.tc_004  # status = Approved
 def test_question_fetch_by_id_status_reported(get_staff_token):
-    req: Requester = Requester()    
+    req: Requester = Requester()
     headers: dict = req.create_basic_headers(token=get_staff_token)
     question_status: str = "Reported"
-    questions_returned: dict = get_db().question_collection.find_one({"question_status": question_status})
-    sql_response_id: str = str(questions_returned['_id'])
-    url: str = f"{req.base_url}/v1/questions/{sql_response_id}"      
+    questions_returned: dict = get_db().question_collection.find_one(
+        {"question_status": question_status}
+    )
+    sql_response_id: str = str(questions_returned["_id"])
+    url: str = f"{req.base_url}/v1/questions/{sql_response_id}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     question: dict = json.loads(response.text)
-    assert question['question']['id'] == str(questions_returned['_id'])
+    assert question["question"]["id"] == str(questions_returned["_id"])
+
 
 @pytest.mark.tc_005  # invalid id format
 def test_question_fetch_by_invalid_id_format(get_staff_token):
-    req: Requester = Requester()    
+    req: Requester = Requester()
     headers: dict = req.create_basic_headers(token=get_staff_token)
     question_status: str = "Reported"
-    questions_returned: dict = get_db().question_collection.find_one({"question_status": question_status})
-    sql_response_id: str = str(questions_returned['_id']) + "dd"
-    url: str = f"{req.base_url}/v1/questions/{sql_response_id}"      
+    questions_returned: dict = get_db().question_collection.find_one(
+        {"question_status": question_status}
+    )
+    sql_response_id: str = str(questions_returned["_id"]) + "dd"
+    url: str = f"{req.base_url}/v1/questions/{sql_response_id}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     question_response: dict = json.loads(response.text)
-    assert_that(question_response['detail']).is_equal_to('Question not found')
+    assert_that(question_response["detail"]).is_equal_to("Question not found")
+
 
 @pytest.mark.tc_006  # invalid id data
 def test_question_fetch_by_invalid_id_data(get_staff_token):
-    req: Requester = Requester()    
+    req: Requester = Requester()
     headers: dict = req.create_basic_headers(token=get_staff_token)
     question_status: str = "Reported"
-    questions_returned: dict = get_db().question_collection.find_one({"question_status": question_status})
-    sql_response_id: str = re.sub(r'\d+', 'z', str(questions_returned['_id']))
-    url: str = f"{req.base_url}/v1/questions/{sql_response_id}"      
+    questions_returned: dict = get_db().question_collection.find_one(
+        {"question_status": question_status}
+    )
+    sql_response_id: str = re.sub(r"\d+", "z", str(questions_returned["_id"]))
+    url: str = f"{req.base_url}/v1/questions/{sql_response_id}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     question_response: dict = json.loads(response.text)
-    assert_that(question_response['detail']).is_equal_to('Question not found')
+    assert_that(question_response["detail"]).is_equal_to("Question not found")
 
-@pytest.mark.tc_007 # invalid token 
+
+@pytest.mark.tc_007  # invalid token
 def test_question_fetch_by_id_invalid_token(get_staff_token):
-    req: Requester = Requester()    
+    req: Requester = Requester()
     invalid_token: str = re.sub(r"\d+", "zz", get_staff_token)
     headers: dict = req.create_basic_headers(token=invalid_token)
     question_status: str = "Reported"
-    questions_returned: dict = get_db().question_collection.find_one({"question_status": question_status})
-    sql_response_id: str = str(questions_returned['_id'])
-    url: str = f"{req.base_url}/v1/questions/{sql_response_id}"      
+    questions_returned: dict = get_db().question_collection.find_one(
+        {"question_status": question_status}
+    )
+    sql_response_id: str = str(questions_returned["_id"])
+    url: str = f"{req.base_url}/v1/questions/{sql_response_id}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 403
     question_response: dict = json.loads(response.text)
-    assert_that(question_response['detail']).is_equal_to('Invalid token')
-    
+    assert_that(question_response["detail"]).is_equal_to("Invalid token")

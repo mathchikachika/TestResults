@@ -16,10 +16,11 @@ from lib.mw_db import get_db
 from lib.fetch_statistics import get_stat_by_question
 
 
-
 @fixture(scope="module")
 def get_admin_token():
-    token = generate_token.generate_token(email="adminXYZ@gmail.com", password="Admin123!")
+    token = generate_token.generate_token(
+        email="adminXYZ@gmail.com", password="Admin123!"
+    )
     yield token
     print("\n\n---- Tear Down Test ----\n")
 
@@ -35,7 +36,7 @@ def test_fetch_question_total_statistics(get_admin_token):
 
     # num_of_mathworlds: int = get_db().question_collection.count_documents(
     #     {'question_type': 'MathWorld', 'question_status': 'Approved'})
-    
+
     total_num_of_questions: int = get_db().question_collection.count_documents({})
 
     headers: dict = req.create_basic_headers(token=get_admin_token)
@@ -44,69 +45,98 @@ def test_fetch_question_total_statistics(get_admin_token):
     json_response: dict = json.loads(response.text)
     assert response.status_code == 200
     questions_stats: dict = json.loads(response.text)
-    total_stat: int = questions_stats['data'][0]['total_no_of_questions'] + \
-        questions_stats['data'][1]['total_no_of_questions'] + questions_stats['data'][2]['total_no_of_questions']
+    total_stat: int = (
+        questions_stats["data"][0]["total_no_of_questions"]
+        + questions_stats["data"][1]["total_no_of_questions"]
+        + questions_stats["data"][2]["total_no_of_questions"]
+    )
     assert_that(total_stat).is_equal_to(total_num_of_questions)
+
 
 @pytest.mark.tc_002
 def test_fetch_question_staar_total_count(get_admin_token):
     req: Requester = Requester()
     num_of_staars: int = get_db().question_collection.count_documents(
-        {'question_type': 'STAAR', 'question_status': 'Approved'})
+        {"question_type": "STAAR", "question_status": "Approved"}
+    )
     headers: dict = req.create_basic_headers(token=get_admin_token)
     url: str = f"{req.base_url}/v1/questions/statistics/all"
     response = requests.request("GET", url, headers=headers)
     questions_stats: dict = json.loads(response.text)
     assert_that(response.status_code).is_equal_to(200)
-    assert_that(get_stat_by_question(questions_stats['data'],'STAAR')['no_of_approved_questions']).is_equal_to(num_of_staars)
+    assert_that(
+        get_stat_by_question(questions_stats["data"], "STAAR")[
+            "no_of_approved_questions"
+        ]
+    ).is_equal_to(num_of_staars)
+
 
 @pytest.mark.tc_003
 def test_fetch_question_college_total_count(get_admin_token):
     req: Requester = Requester()
     num_of_college: int = get_db().question_collection.count_documents(
-        {'question_type': 'College Level', 'question_status': 'Approved'})
+        {"question_type": "College Level", "question_status": "Approved"}
+    )
     headers: dict = req.create_basic_headers(token=get_admin_token)
     url: str = f"{req.base_url}/v1/questions/statistics/all"
     response = requests.request("GET", url, headers=headers)
     questions_stats: dict = json.loads(response.text)
     assert_that(response.status_code).is_equal_to(200)
-    assert_that(get_stat_by_question(questions_stats['data'],'College Level')['no_of_approved_questions']).is_equal_to(num_of_college)
+    assert_that(
+        get_stat_by_question(questions_stats["data"], "College Level")[
+            "no_of_approved_questions"
+        ]
+    ).is_equal_to(num_of_college)
+
 
 @pytest.mark.tc_004
 def test_fetch_question_mathworld_total_count(get_admin_token):
     req: Requester = Requester()
     num_of_mathword: int = get_db().question_collection.count_documents(
-        {'question_type': 'Mathworld', 'question_status': 'Approved'})
+        {"question_type": "Mathworld", "question_status": "Approved"}
+    )
     headers: dict = req.create_basic_headers(token=get_admin_token)
     url: str = f"{req.base_url}/v1/questions/statistics/all"
     response = requests.request("GET", url, headers=headers)
     questions_stats: dict = json.loads(response.text)
     assert_that(response.status_code).is_equal_to(200)
-    assert_that(get_stat_by_question(questions_stats['data'],'Mathworld')['no_of_approved_questions']).is_equal_to(num_of_mathword)
+    assert_that(
+        get_stat_by_question(questions_stats["data"], "Mathworld")[
+            "no_of_approved_questions"
+        ]
+    ).is_equal_to(num_of_mathword)
+
 
 @pytest.mark.tc_005
 def test_fetch_question_stats_invalid_token(get_admin_token):
     req: Requester = Requester()
     # num_of_mathword: int = get_db().question_collection.count_documents(
-        # {'question_type': 'Mathworld', 'question_status': 'Approved'})
+    # {'question_type': 'Mathworld', 'question_status': 'Approved'})
     headers: dict = req.create_basic_headers(token=get_admin_token + "x")
     url: str = f"{req.base_url}/v1/questions/statistics/all"
     response = requests.request("GET", url, headers=headers)
     questions_stats: dict = json.loads(response.text)
     assert_that(response.status_code).is_equal_to(403)
-    assert_that(questions_stats['detail']).is_equal_to('Invalid token')
+    assert_that(questions_stats["detail"]).is_equal_to("Invalid token")
+
 
 @pytest.mark.tc_007
 def test_fetch_question_stats_pending(get_admin_token):
     req: Requester = Requester()
     num_of_mathword: int = get_db().question_collection.count_documents(
-        {'question_type': 'Mathworld', 'question_status': 'Pending'})
+        {"question_type": "Mathworld", "question_status": "Pending"}
+    )
     headers: dict = req.create_basic_headers(token=get_admin_token)
     url: str = f"{req.base_url}/v1/questions/statistics/all"
     response = requests.request("GET", url, headers=headers)
     questions_stats: dict = json.loads(response.text)
     assert_that(response.status_code).is_equal_to(200)
-    assert_that(get_stat_by_question(questions_stats['data'],'Mathworld')['no_of_pending_questions']).is_equal_to(num_of_mathword)
+    assert_that(
+        get_stat_by_question(questions_stats["data"], "Mathworld")[
+            "no_of_pending_questions"
+        ]
+    ).is_equal_to(num_of_mathword)
+
 
 # @pytest.mark.tc_008
 # def test_fetch_question_stats_rejected(get_admin_token):
@@ -120,18 +150,25 @@ def test_fetch_question_stats_pending(get_admin_token):
 #     assert_that(response.status_code).is_equal_to(200)
 #     assert_that(questions_stats['data'][1]['no_of_reported_questions']).is_not_equal_to(num_of_mathword)
 
+
 @pytest.mark.tc_009
 def test_fetch_question_stats_reported(get_admin_token):
     req: Requester = Requester()
     num_of_mathword: int = get_db().question_collection.count_documents(
-        {'question_type': 'Mathworld', 'question_status': 'Reported'})
+        {"question_type": "Mathworld", "question_status": "Reported"}
+    )
     headers: dict = req.create_basic_headers(token=get_admin_token)
     url: str = f"{req.base_url}/v1/questions/statistics/all"
     response = requests.request("GET", url, headers=headers)
     questions_stats: dict = json.loads(response.text)
     assert_that(response.status_code).is_equal_to(200)
     print(questions_stats)
-    assert_that(get_stat_by_question(questions_stats['data'],'Mathworld')['no_of_reported_questions']).is_equal_to(num_of_mathword)
+    assert_that(
+        get_stat_by_question(questions_stats["data"], "Mathworld")[
+            "no_of_reported_questions"
+        ]
+    ).is_equal_to(num_of_mathword)
+
 
 # @pytest.mark.tc_011
 # def test_fetch_question_stats_college(get_admin_token):
@@ -145,14 +182,20 @@ def test_fetch_question_stats_reported(get_admin_token):
 #     assert_that(response.status_code).is_equal_to(200)
 #     assert_that(questions_stats['data'][0]['no_of_reported_questions']).is_not_equal_to(num_of_college)
 
+
 @pytest.mark.tc_012
 def test_fetch_question_stats_mathworld(get_admin_token):
     req: Requester = Requester()
     num_of_mathword: int = get_db().question_collection.count_documents(
-        {'question_type': 'Mathworld'})
+        {"question_type": "Mathworld"}
+    )
     headers: dict = req.create_basic_headers(token=get_admin_token)
     url: str = f"{req.base_url}/v1/questions/statistics/all"
     response = requests.request("GET", url, headers=headers)
     questions_stats: dict = json.loads(response.text)
     assert_that(response.status_code).is_equal_to(200)
-    assert_that(get_stat_by_question(questions_stats['data'],'Mathworld')['no_of_reported_questions']).is_not_equal_to(num_of_mathword)
+    assert_that(
+        get_stat_by_question(questions_stats["data"], "Mathworld")[
+            "no_of_reported_questions"
+        ]
+    ).is_not_equal_to(num_of_mathword)

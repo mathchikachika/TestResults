@@ -1,24 +1,31 @@
-from datetime import datetime
-from typing import Optional, List
-from pydantic import BaseModel, model_validator, validator, Field 
 import re
 import secrets
 import string
-from beanie import Document, PydanticObjectId, Indexed
+from datetime import datetime
+from typing import List, Optional
+
+from beanie import Document, Indexed, PydanticObjectId
+from pydantic import BaseModel, Field, model_validator, validator
+
 from server.models.validators.accounts_validator import (
+    password_must_be_valid,
     validate_fields,
     validate_update_fields,
-    password_must_be_valid
 )
 
 
 def is_not_empty(cls, values):
     for attr, value in values.items():
-        if(attr == "middle_name" or attr == 'created_by' or attr == 'updated_by' or attr == "phone_number"):
+        if (
+            attr == "middle_name"
+            or attr == "created_by"
+            or attr == "updated_by"
+            or attr == "phone_number"
+        ):
             continue
         else:
-            if(value == ""):
-                raise ValueError(f'{attr} field should not be empty')
+            if value == "":
+                raise ValueError(f"{attr} field should not be empty")
 
     return values
 
@@ -35,19 +42,18 @@ class User(Document):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
-    @validator('updated_at', pre=True, always=True)
+    @validator("updated_at", pre=True, always=True)
     def set_updated_at_now(v):
         return v or datetime.utcnow()
-    
-    @validator('created_at', pre=True, always=True)
+
+    @validator("created_at", pre=True, always=True)
     def set_created_at_now(v):
         return v or datetime.utcnow()
-    
+
     class Settings:
         name = "user_collection"
-        indexes = [
-            [("role", 1)]
-        ]
+        indexes = [[("role", 1)]]
+
 
 class ContactPerson(BaseModel):
     first_name: str
@@ -61,10 +67,12 @@ class ContactPerson(BaseModel):
     zip_code: str
     phone_number: Optional[str] = None
 
+
 class OfficeDetails(BaseModel):
     location: str
     conference_time: Optional[str] = None
     phone_number: str
+
 
 class Education(BaseModel):
     school: str
@@ -73,32 +81,34 @@ class Education(BaseModel):
     year_started: str
     year_ended: str
 
+
 class EducationList(BaseModel):
     education: List[Education]
+
 
 class Student(User):
     contact_person: ContactPerson
 
+
 class Teacher(User):
     office_details: Optional[OfficeDetails] = None
     education: Optional[List[Education]] = None
-    
+
 
 class LogIn(BaseModel):
     email: str
     password: str
 
-    @validator('email', pre=True, always=True)
+    @validator("email", pre=True, always=True)
     def check_email(cls, v):
         if v:
-            regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
-            if(re.fullmatch(regex, v)):
+            regex = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
+            if re.fullmatch(regex, v):
                 return v
             else:
-                raise ValueError('email is invalid')
+                raise ValueError("email is invalid")
         else:
-            raise ValueError('email field should not be empty')
-    
+            raise ValueError("email field should not be empty")
 
     class Config:
         json_schema_extra = {
@@ -107,6 +117,7 @@ class LogIn(BaseModel):
                 "password": "password",
             }
         }
+
 
 class Registration(BaseModel):
     first_name: str
@@ -118,27 +129,27 @@ class Registration(BaseModel):
     password: str
     repeat_password: str
     contact_person: Optional[ContactPerson]
-    _no_empty_required_fields =model_validator(mode='before')(is_not_empty)
-    _check_password = model_validator(mode='before')(password_must_be_valid)
+    _no_empty_required_fields = model_validator(mode="before")(is_not_empty)
+    _check_password = model_validator(mode="before")(password_must_be_valid)
 
-    @validator('role')
+    @validator("role")
     def check_role(cls, v):
         if v != "student":
-            raise ValueError('role must be a student when creating a student account')
-        
-        return v
-            
+            raise ValueError("role must be a student when creating a student account")
 
-    @validator('email')
+        return v
+
+    @validator("email")
     def check_email(cls, v):
         if v:
-            regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
-            if(re.fullmatch(regex, v)):
+            regex = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
+            if re.fullmatch(regex, v):
                 return v
             else:
-                raise ValueError('email is invalid')
+                raise ValueError("email is invalid")
         else:
-            raise ValueError('email field should not be empty')
+            raise ValueError("email field should not be empty")
+
 
 # class Registration(Account):
 #     school: Optional[str] = None
@@ -173,7 +184,7 @@ class Registration(BaseModel):
 #     @validator('updated_at', pre=True, always=True)
 #     def set_updated_at_now(v):
 #         return v or datetime.utcnow()
-    
+
 
 # class UpdatedSubscriberAccount(UpdatedAccount):
 #     school: str
@@ -189,7 +200,7 @@ class Registration(BaseModel):
 #     @validator('updated_at', pre=True, always=True)
 #     def set_updated_at_now(v):
 #         return v or datetime.utcnow()
-    
+
 #     class Config:
 #         json_schema_extra = {
 #             "example": {
@@ -199,15 +210,18 @@ class Registration(BaseModel):
 #             }
 #         }
 
+
 class UserAccount(BaseModel):
     email: str
     role: str
 
+
 class UserAccounts(BaseModel):
     accounts: List[UserAccount]
 
+
 class UserResponseModel(BaseModel):
-    id: PydanticObjectId = Field(alias='_id')
+    id: PydanticObjectId = Field(alias="_id")
     subscriber_id: str
     first_name: str
     middle_name: Optional[str] = None
@@ -220,14 +234,16 @@ class UserResponseModel(BaseModel):
     updated_by: Optional[str] = None
     updated_at: Optional[datetime] = None
 
+
 class InitialUserAccountResponseModel(BaseModel):
-    id: PydanticObjectId = Field(alias='_id')
+    id: PydanticObjectId = Field(alias="_id")
     subscriber_id: str
     role: str
     status: str
     email: str
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+
 
 class UpdatedUserViaSubscriber(BaseModel):
     first_name: str
@@ -237,29 +253,30 @@ class UpdatedUserViaSubscriber(BaseModel):
     updated_by: Optional[str] = None
     updated_at: Optional[datetime] = None
 
-    @validator('updated_at', pre=True, always=True)
+    @validator("updated_at", pre=True, always=True)
     def set_updated_at_now(v):
         return v or datetime.utcnow()
-    
+
     class Config:
         json_schema_extra = {
             "example": {
                 "first_name": "Peter",
                 "middle_name": "John",
                 "last_name": "James",
-                "email": "peterjohnj@gmail.com"
+                "email": "peterjohnj@gmail.com",
             }
         }
+
 
 class UpdatedRole(BaseModel):
     role: str
     updated_by: Optional[str] = None
     updated_at: Optional[datetime] = None
 
-    @validator('updated_at', pre=True, always=True)
+    @validator("updated_at", pre=True, always=True)
     def set_updated_at_now(v):
         return v or datetime.utcnow()
-    
+
     class Config:
         json_schema_extra = {
             "example": {
@@ -267,15 +284,16 @@ class UpdatedRole(BaseModel):
             }
         }
 
+
 class UpdatedStatus(BaseModel):
     status: str
     updated_by: Optional[str] = None
     updated_at: Optional[datetime] = None
 
-    @validator('updated_at', pre=True, always=True)
+    @validator("updated_at", pre=True, always=True)
     def set_updated_at_now(v):
         return v or datetime.utcnow()
-    
+
     class Config:
         json_schema_extra = {
             "example": {
@@ -283,24 +301,25 @@ class UpdatedStatus(BaseModel):
             }
         }
 
+
 class ResetPassword(BaseModel):
     password: Optional[str] = None
     updated_by: Optional[str] = None
     updated_at: Optional[datetime] = None
 
-    @validator('updated_at', pre=True, always=True)
+    @validator("updated_at", pre=True, always=True)
     def set_updated_at_now(v):
         return v or datetime.utcnow()
-    
-    @validator('password', pre=True, always=True)
+
+    @validator("password", pre=True, always=True)
     def generate_password(v):
         letters = string.ascii_letters
         digits = string.digits
-        special_chars = string.punctuation.replace('"','')
-        special_chars = special_chars.replace('"','').replace("'","").replace(".","")
+        special_chars = string.punctuation.replace('"', "")
+        special_chars = special_chars.replace('"', "").replace("'", "").replace(".", "")
         choices = letters + digits + special_chars
-        v = ''
+        v = ""
         for i in range(9):
-            v += ''.join(secrets.choice(choices))
-        
+            v += "".join(secrets.choice(choices))
+
         return v
