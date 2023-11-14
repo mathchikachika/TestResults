@@ -1,0 +1,16 @@
+fastapi
+uvicorn
+pydantic
+motor
+beanie
+python-dotenv
+cryptocode
+python-jose
+passlib
+bcrypt
+faker
+pytest
+requests
+assertpy
+apiclient
+jsoncomparedeep
