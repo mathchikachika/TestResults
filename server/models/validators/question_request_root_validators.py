@@ -459,7 +459,13 @@ def validate_release_date(v):
 
         dates = v.split("-")
         today = datetime.now()
-        if int(dates[0]) > today.year and int(dates[1]) > today.month:
+        if int(dates[0]) > today.year:
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                detail="release date invalid - date should not be in future",
+            )
+
+        if int(dates[0]) == today.year and int(dates[1]) > today.month:
             raise HTTPException(
                 status.HTTP_400_BAD_REQUEST,
                 detail="release date invalid - date should not be in future",
