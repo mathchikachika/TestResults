@@ -1,8 +1,12 @@
+import json
+import os
+import pdb
+import sys
+
+import requests
+from assertpy import assert_that
 from bson import ObjectId
 from pytest import fixture
-import pdb, requests
-import os, sys, json
-from assertpy import assert_that
 
 from tests.lib.mw_db import get_db
 
@@ -11,10 +15,13 @@ PARENT_DIR = os.path.dirname(CURRENT_DIR)
 sys.path.append(CURRENT_DIR)
 sys.path.append(PARENT_DIR)
 
-import logging as logger, pytest
+import logging as logger
+
 import lib.common as common
 import lib.generate_token as generate_token
+import pytest
 from lib.requester import Requester
+
 from tests.payloads.valid_question_payloads import get_valid_successful_staar_payload
 
 

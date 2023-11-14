@@ -1,19 +1,25 @@
-from pytest import fixture
-import pdb, requests
-import os, sys, json
+import json
+import os
+import pdb
+import sys
+
+import requests
 from assertpy import assert_that
+from pytest import fixture
 
 CURRENT_DIR = os.getcwd()
 PARENT_DIR = os.path.dirname(CURRENT_DIR)
 sys.path.append(CURRENT_DIR)
 sys.path.append(PARENT_DIR)
 
-import logging as logger, pytest
+import logging as logger
+
 import lib.common as common
 import lib.generate_token as generate_token
-from lib.requester import Requester
-from lib.mw_db import get_db
+import pytest
 from lib.fetch_statistics import get_stat_by_question
+from lib.mw_db import get_db
+from lib.requester import Requester
 
 
 @fixture(scope="module")

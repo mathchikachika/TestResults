@@ -1,6 +1,10 @@
+import json
+import os
+import pdb
+import sys
+
+import requests
 from pytest import fixture
-import pdb, requests
-import os, sys, json
 
 from tests.payloads.valid_question_payloads import get_valid_successful_staar_payload
 
@@ -9,9 +13,11 @@ PARENT_DIR = os.path.dirname(CURRENT_DIR)
 sys.path.append(CURRENT_DIR)
 sys.path.append(PARENT_DIR)
 
-import logging as logger, pytest
+import logging as logger
+
 import lib.common as common
 import lib.generate_token as generate_token
+import pytest
 from lib.requester import Requester
 
 
@@ -305,8 +311,8 @@ def test_release_date_future(get_staff_token):
 
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
-    assert response.status_code == 201
-    assert json_response["detail"] == "Successfully Added Question"
+    assert response.status_code == 400
+    assert json_response["detail"] == "release date invalid - date should not be in future"
 
 
 @pytest.mark.tc_025
@@ -447,8 +453,8 @@ def test_release_date_leap_year(get_staff_token):
 
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
-    assert response.status_code == 201
-    assert json_response["detail"] == "Successfully Added Question"
+    assert response.status_code == 400
+    assert json_response["detail"] == "release date invalid - date should not be in future"
 
 
 @pytest.mark.tc_032
