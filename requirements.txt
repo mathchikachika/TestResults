@@ -16,3 +16,5 @@ apiclient
 jsoncomparedeep
 black
 isort
+pytest-xdist
+pytest_asyncio
