@@ -1,14 +1,19 @@
+import json
+import os
+import pdb
+import random
+import sys
+import time
+import uuid
+
+import requests
+from assertpy import assert_that
 from bson import ObjectId
+from faker import Faker
+from lib.mw_db import get_db
 from pydantic import MongoDsn
 from pytest import fixture
-import pdb, requests
-import os, sys, json
-from faker import Faker
-import random
-from assertpy import assert_that
-import uuid
-import time
-from lib.mw_db import get_db
+
 from tests.payloads.valid_question_payloads import get_valid_successful_college_payload
 
 CURRENT_DIR = os.getcwd()
@@ -16,10 +21,12 @@ PARENT_DIR = os.path.dirname(CURRENT_DIR)
 sys.path.append(CURRENT_DIR)
 sys.path.append(PARENT_DIR)
 
-import logging as logger, pytest
+import logging as logger
+
 import lib.common as common
-from lib.common import get_random_question
 import lib.generate_token as generate_token
+import pytest
+from lib.common import get_random_question
 from lib.requester import Requester
 
 faker = Faker()

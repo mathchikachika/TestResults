@@ -1,21 +1,27 @@
-from pytest import fixture
-import pdb, requests
-import os, sys, json
-from assertpy import assert_that
+import json
+import os
+import pdb
 import random
+import sys
 import time
+
+import requests
+from assertpy import assert_that
+from pytest import fixture
 
 CURRENT_DIR = os.getcwd()
 PARENT_DIR = os.path.dirname(CURRENT_DIR)
 sys.path.append(CURRENT_DIR)
 sys.path.append(PARENT_DIR)
 
-import logging as logger, pytest
+import logging as logger
+
 import lib.common as common
 import lib.generate_token as generate_token
-from lib.requester import Requester
-from lib.mw_sql import execute_query
+import pytest
 from faker import Faker
+from lib.mw_sql import execute_query
+from lib.requester import Requester
 
 fake = Faker()
 

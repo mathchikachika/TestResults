@@ -1,22 +1,29 @@
+import json
+import os
+import pdb
+import sys
+
+import requests
 from pytest import fixture
-import pdb, requests
-import os, sys, json
 
 CURRENT_DIR = os.getcwd()
 PARENT_DIR = os.path.dirname(CURRENT_DIR)
 sys.path.append(CURRENT_DIR)
 sys.path.append(PARENT_DIR)
 
-import logging as logger, pytest
+import logging as logger
+import random
+
 import lib.common as common
 import lib.generate_token as generate_token
-from lib.requester import Requester
-from lib.common import get_random_question, get_current_yyyy_mm, get_random_payload_data
-import random
+import pytest
 from assertpy import assert_that
-from tests.payloads.valid_question_payloads import get_valid_successful_staar_payload
-from lib.mw_db import get_db
 from bson import ObjectId
+from lib.common import get_current_yyyy_mm, get_random_payload_data, get_random_question
+from lib.mw_db import get_db
+from lib.requester import Requester
+
+from tests.payloads.valid_question_payloads import get_valid_successful_staar_payload
 
 
 @fixture(scope="module")

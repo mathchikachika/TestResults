@@ -1,15 +1,21 @@
+import json
+import os
+import pdb
+import sys
+
+import requests
 from pytest import fixture
-import pdb, requests
-import os, sys, json
 
 CURRENT_DIR = os.getcwd()
 PARENT_DIR = os.path.dirname(CURRENT_DIR)
 sys.path.append(CURRENT_DIR)
 sys.path.append(PARENT_DIR)
 
-import logging as logger, pytest
+import logging as logger
+
 import lib.common as common
 import lib.generate_token as generate_token
+import pytest
 from lib.requester import Requester
 from payloads.valid_question_payloads import get_valid_successful_staar_payload
 
