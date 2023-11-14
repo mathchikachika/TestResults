@@ -311,8 +311,8 @@ def test_release_date_future(get_staff_token):
 
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
-    assert response.status_code == 201
-    assert json_response["detail"] == "Successfully Added Question"
+    assert response.status_code == 400
+    assert json_response["detail"] == "release date invalid - date should not be in future"
 
 
 @pytest.mark.tc_025
@@ -453,8 +453,8 @@ def test_release_date_leap_year(get_staff_token):
 
     response = requests.request("POST", url, headers=header, json=payload)
     json_response = json.loads(response.text)
-    assert response.status_code == 201
-    assert json_response["detail"] == "Successfully Added Question"
+    assert response.status_code == 400
+    assert json_response["detail"] == "release date invalid - date should not be in future"
 
 
 @pytest.mark.tc_032
