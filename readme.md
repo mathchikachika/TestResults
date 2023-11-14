@@ -2,7 +2,7 @@
 
 To set up and run the project, follow these steps:
 
-1. Create a virtual environment (recommended) and activate it:
+1. Create a virtual environment (recommended) and activate it (use git bash):
    ```bash
    python -m venv venv
    source venv/bin/activate
