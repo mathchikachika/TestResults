@@ -1,6 +1,8 @@
 from server.models.question import Activity
 
 
+
+# record_activity records an activity related to a question.
 async def record_activity(
     question,
     activity_title: str = None,

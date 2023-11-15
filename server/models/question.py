@@ -14,6 +14,8 @@ from server.models.validators.question_request_root_validators import (
     validate_updated_status_fields,
 )
 
+# The `Activity` class is a document that represents an activity with a title, details, staff
+# involved, question ID, staff ID, and creation timestamp.
 
 class Activity(Document):
     title: str
@@ -27,11 +29,14 @@ class Activity(Document):
     def set_created_at_now(v):
         return v or datetime.utcnow()
 
+  # The class "Settings" defines the name and indexes for an activity collection.
     class Settings:
         name = "acitivity_collection"
         indexes = [[("question_id", 1)], [("staff_id", 1)]]
 
 
+# The `Option` class represents an option in a multiple-choice question, with properties for the
+# letter, content, image, unit, and whether it is the correct answer.
 class Option(BaseModel):
     letter: str
     content: str
@@ -41,6 +46,8 @@ class Option(BaseModel):
     _validate_fields = model_validator(mode="before")(validate_option_fields)
 
 
+# The `Question` class represents a document with various attributes such as response type, question
+# content, image, status, options, and timestamps for creation, update, and review.
 class Question(Document):
     response_type: str
     question_content: str
@@ -67,6 +74,9 @@ class Question(Document):
         indexes = [[("response_type", 1)], [("question_status", 1)]]
 
 
+# The `StaarQuestion` class is a subclass of `Question` that represents a STAAR (State of Texas
+# Assessments of Academic Readiness) question and includes additional fields specific to STAAR
+# questions.
 class StaarQuestion(Question):
     question_type: str
     grade_level: int
@@ -76,6 +86,7 @@ class StaarQuestion(Question):
     keywords: List[str]
     _validate_fields = model_validator(mode="before")(validate_staar_fields)
 
+# The class "Settings" defines a collection named "question_collection" with multiple indexes.
     class Settings:
         name = "question_collection"
         indexes = [
@@ -88,6 +99,7 @@ class StaarQuestion(Question):
         ]
 
 
+# The above class represents a college question with specific fields and validation.
 class CollegeQuestion(Question):
     question_type: str
     classification: str
@@ -95,6 +107,7 @@ class CollegeQuestion(Question):
     keywords: List[str]
     _validate_fields = model_validator(mode="before")(validate_college_fields)
 
+# The class "Settings" defines the name and indexes for a question collection.
     class Settings:
         name = "question_collection"
         indexes = [
@@ -103,6 +116,8 @@ class CollegeQuestion(Question):
         ]
 
 
+# The class MathworldQuestion represents a question in the Mathworld system and includes various
+# properties and methods for managing question data.
 class MathworldQuestion(Question):
     question_type: str
     grade_level: int
@@ -116,6 +131,8 @@ class MathworldQuestion(Question):
     points: int
     _validate_fields = model_validator(mode="before")(validate_mathworld_fields)
 
+# The class "Settings" defines the name of a collection and the indexes for that collection in a
+# MongoDB database.
     class Settings:
         name = "question_collection"
         indexes = [
@@ -126,6 +143,8 @@ class MathworldQuestion(Question):
         ]
 
 
+# The `UpdatedStaarQuestion` class is a subclass of `StaarQuestion` that adds additional fields for
+# update notes, the user who updated the question, the timestamp of the update, and a list of options.
 class UpdatedStaarQuestion(StaarQuestion):
     update_note: str
     updated_by: Optional[str] = None
@@ -140,6 +159,9 @@ class UpdatedStaarQuestion(StaarQuestion):
         return v or datetime.utcnow()
 
 
+# The class `UpdatedCollegeQuestion` is an updated version of the `CollegeQuestion` class, with
+# additional fields for tracking updates and a validator for ensuring all required fields are present
+# when updating a question.
 class UpdatedCollegeQuestion(CollegeQuestion):
     update_note: str
     updated_by: Optional[str] = None
@@ -154,6 +176,9 @@ class UpdatedCollegeQuestion(CollegeQuestion):
         return v or datetime.utcnow()
 
 
+# The class `UpdatedMathworldQuestion` is an updated version of the `MathworldQuestion` class, with
+# additional fields for update note, updated by, updated at, and options. It also includes a validator
+# for ensuring that all required update fields are present.
 class UpdatedMathworldQuestion(MathworldQuestion):
     update_note: str
     updated_by: Optional[str] = None
@@ -168,6 +193,8 @@ class UpdatedMathworldQuestion(MathworldQuestion):
         return v or datetime.utcnow()
 
 
+# The class `UpdateQuestionStatus` is a BaseModel that represents the status update of a question,
+# including the status, update note, reviewer, and review timestamp.
 class UpdateQuestionStatus(BaseModel):
     status: str
     update_note: Optional[str] = None
@@ -179,6 +206,7 @@ class UpdateQuestionStatus(BaseModel):
     def set_updated_at_now(cls, v):
         return v or datetime.utcnow()
 
+# The class `Config` has a `json_schema_extra` attribute with an example JSON schema.
     class Config:
         json_schema_extra = {
             "example": {"status": "Approved", "update_note": "Update message"}
@@ -186,4 +214,16 @@ class UpdateQuestionStatus(BaseModel):
 
 
 def ErrorResponseModel(error, code, message):
+    """
+    The function ErrorResponseModel returns a dictionary containing error, code, and message.
+    
+    :param error: The error parameter is a string that represents the type or category of the error that
+    occurred. It can be used to provide more specific information about the nature of the error
+    :param code: The code parameter is used to represent the error code or status code of the response.
+    It is typically a numerical value that indicates the specific error or status of the response
+    :param message: The message parameter is a string that represents the error message or description.
+    It provides additional information about the error that occurred
+    :return: a dictionary with three keys: "error", "code", and "message". The values for these keys are
+    provided as arguments to the function.
+    """
     return {"error": error, "code": code, "message": message}

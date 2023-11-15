@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
 from server.connection.database import init_db
 from server.routes.version1.activities import router as ActivityRouterV1
 from server.routes.version1.questions import router as QuestionRouterV1
