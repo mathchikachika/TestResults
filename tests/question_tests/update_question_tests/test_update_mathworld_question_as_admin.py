@@ -1,16 +1,17 @@
 import json
 import os
-import pdb
-import random
 import sys
-import time
-import uuid
 
 import requests
 from assertpy import assert_that
 from bson import ObjectId
 from faker import Faker
+from lib.mw_db import get_db
 from pytest import fixture
+
+from tests.payloads.valid_question_payloads import (
+    get_valid_successful_mathworld_payload,
+)
 
 CURRENT_DIR = os.getcwd()
 PARENT_DIR = os.path.dirname(CURRENT_DIR)
@@ -23,12 +24,7 @@ import lib.common as common
 import lib.generate_token as generate_token
 import pytest
 from lib.common import get_random_question
-from lib.mw_db import get_db
 from lib.requester import Requester
-
-from tests.payloads.valid_question_payloads import (
-    get_valid_successful_mathworld_payload,
-)
 
 faker = Faker()
 
@@ -45,41 +41,44 @@ def get_admin_token():
 @pytest.mark.tc_001
 def test_update_mathworld_question(get_admin_token):
     req: Requester = Requester()
-    random_data: dict = common.get_mathworld_random_payload_data()
-    mathworld_classic: dict = get_db().question_collection.find_one(
+    mathworld_classic = get_db().question_collection.find_one(
         {"question_type": "Mathworld"}
     )
-    sql_classic_id: str = mathworld_classic["_id"]
+    sql_classic_id: ObjectId = mathworld_classic["_id"]
     sql_classic_question_type: str = mathworld_classic["question_type"]
+    sql_classic_response_type: str = mathworld_classic["response_type"]
     sql_classic_question: str = mathworld_classic["question_content"]
     sql_classic_status: str = mathworld_classic["question_status"]
-
     random_payload = get_valid_successful_mathworld_payload()
-
+    random_payload["update_note"] = "Updated question"
     header: dict = req.create_basic_headers(token=get_admin_token)
+
     url: str = f"{req.base_url}/v1/questions/update/{sql_classic_id}"
-    # upload_file: list = common.set_image_file(f"{CURRENT_DIR}\\tests\\images", "image_01.jpg")
+    print(random_payload)
     response = requests.request(
         "PUT", url, headers=header, data=json.dumps(random_payload)
     )
     updated_response: dict = json.loads(response.text)
-    time.sleep(2)
-    assert_that(response.status_code).is_equal_to(200)
-    assert_that(updated_response["detail"]).is_equal_to("Successfully updated")
-    assert_that(updated_response["_id"]).is_equal_to(sql_classic_id)
-    sql_mathworld_updated: dict = get_db().question_collection.find_one(
-        {"_id": ObjectId(sql_classic_id)}
+    print(updated_response)
+    assert_that(response.status_code).is_equal_to(201)
+    assert_that(updated_response["detail"]).is_equal_to("Successfully Updated Question")
+    assert_that(str(updated_response["question"]["_id"])).is_equal_to(
+        str(sql_classic_id)
     )
 
+    sql_mathworld_updated = get_db().question_collection.find_one(
+        {"_id": ObjectId(sql_classic_id)}
+    )
+    print(sql_mathworld_updated)
     sql_updated_id: str = sql_mathworld_updated["_id"]
     sql_updated_question_type: str = sql_mathworld_updated["question_type"]
     sql_updated_response_type: str = sql_mathworld_updated["response_type"]
     sql_updated_question: str = sql_mathworld_updated["question_content"]
     sql_updated_status: str = sql_mathworld_updated["question_status"]
-    # time.sleep(1)
+
     assert_that(sql_updated_id).is_equal_to(sql_classic_id)
     assert_that(sql_updated_question_type).is_equal_to(sql_classic_question_type)
-    assert_that(sql_updated_response_type).is_equal_to(random_data["response_type"])
+    assert_that(sql_updated_response_type).is_equal_to(sql_classic_response_type)
     assert_that(sql_updated_question).is_not_equal_to(sql_classic_question)
     assert_that(sql_updated_status).is_equal_to(sql_classic_status)
 
@@ -87,21 +86,19 @@ def test_update_mathworld_question(get_admin_token):
 @pytest.mark.tc_002
 def test_update_mathworld_question_invalid_id(get_admin_token):
     req: Requester = Requester()
-    random_data: dict = common.get_mathworld_random_payload_data()
     mathworld_classic: list = get_db().question_collection.find_one(
         {"question_type": "Mathworld"}
     )
-    sql_classic_invalid_id: str = str(mathworld_classic["_id"]) + "333"
 
+    sql_classic_invalid_id: str = str(mathworld_classic["_id"]) + "123"
     random_payload = get_valid_successful_mathworld_payload()
-
+    random_payload["update_note"] = "Updated question"
     header: dict = req.create_basic_headers(token=get_admin_token)
+
     url: str = f"{req.base_url}/v1/questions/update/{sql_classic_invalid_id}"
-    # upload_file: list = common.set_image_file(f"{CURRENT_DIR}\\tests\\images", "image_01.jpg")
     response = requests.request(
-        "PUT", url, headers=header, data=json.dumps(random_data)
+        "PUT", url, headers=header, data=json.dumps(random_payload)
     )
     updated_response: dict = json.loads(response.text)
-    time.sleep(1)
     assert_that(response.status_code).is_equal_to(400)
-    assert_that(updated_response["detail"]).is_equal_to("Invalid Teks Code")
+    assert_that(updated_response["detail"]).is_equal_to("Question not found")

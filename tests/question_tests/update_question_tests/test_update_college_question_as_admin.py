@@ -1,17 +1,12 @@
 import json
 import os
-import pdb
-import random
 import sys
-import time
-import uuid
 
 import requests
 from assertpy import assert_that
 from bson import ObjectId
 from faker import Faker
 from lib.mw_db import get_db
-from pydantic import MongoDsn
 from pytest import fixture
 
 from tests.payloads.valid_question_payloads import get_valid_successful_college_payload
@@ -44,7 +39,6 @@ def get_admin_token():
 @pytest.mark.tc_001
 def test_update_college_question(get_admin_token):
     req: Requester = Requester()
-    random_data: dict = common.get_random_payload_data()
     college_classic = get_db().question_collection.find_one(
         {"question_type": "College Level"}
     )
@@ -54,32 +48,35 @@ def test_update_college_question(get_admin_token):
     sql_classic_question: str = college_classic["question_content"]
     sql_classic_status: str = college_classic["question_status"]
     random_payload = get_valid_successful_college_payload()
+    random_payload["update_note"] = "Updated question"
     header: dict = req.create_basic_headers(token=get_admin_token)
 
     url: str = f"{req.base_url}/v1/questions/update/{sql_classic_id}"
-    # upload_file: list = common.set_image_file(f"{CURRENT_DIR}\\tests\\images", "image_01.jpg")
-    time.sleep(1)
+    print(random_payload)
     response = requests.request(
         "PUT", url, headers=header, data=json.dumps(random_payload)
     )
     updated_response: dict = json.loads(response.text)
     print(updated_response)
-    assert_that(response.status_code).is_equal_to(200)
-    assert_that(updated_response["detail"]).is_equal_to("Successfully updated")
-    assert_that(str(updated_response["_id"])).is_equal_to(str(sql_classic_id))
+    assert_that(response.status_code).is_equal_to(201)
+    assert_that(updated_response["detail"]).is_equal_to("Successfully Updated Question")
+    assert_that(str(updated_response["question"]["_id"])).is_equal_to(
+        str(sql_classic_id)
+    )
 
     sql_college_updated = get_db().question_collection.find_one(
         {"_id": ObjectId(sql_classic_id)}
     )
+    print(sql_college_updated)
     sql_updated_id: str = sql_college_updated["_id"]
     sql_updated_question_type: str = sql_college_updated["question_type"]
     sql_updated_response_type: str = sql_college_updated["response_type"]
     sql_updated_question: str = sql_college_updated["question_content"]
-    sql_updated_status: str = sql_college_updated["updated_status"]
+    sql_updated_status: str = sql_college_updated["question_status"]
 
     assert_that(sql_updated_id).is_equal_to(sql_classic_id)
     assert_that(sql_updated_question_type).is_equal_to(sql_classic_question_type)
-    assert_that(sql_updated_response_type).is_equal_to(random_data["response_type"])
+    assert_that(sql_updated_response_type).is_equal_to(sql_classic_response_type)
     assert_that(sql_updated_question).is_not_equal_to(sql_classic_question)
     assert_that(sql_updated_status).is_equal_to(sql_classic_status)
 
@@ -87,22 +84,19 @@ def test_update_college_question(get_admin_token):
 @pytest.mark.tc_002
 def test_update_college_question_invalid_id(get_admin_token):
     req: Requester = Requester()
-    random_data: dict = common.get_random_payload_data()
     college_classic: list = get_db().question_collection.find_one(
         {"question_type": "College Level"}
     )
 
     sql_classic_invalid_id: str = str(college_classic["_id"]) + "123"
     random_payload = get_valid_successful_college_payload()
-
+    random_payload["update_note"] = "Updated question"
     header: dict = req.create_basic_headers(token=get_admin_token)
 
     url: str = f"{req.base_url}/v1/questions/update/{sql_classic_invalid_id}"
-    # upload_file: list = common.set_image_file(f"{CURRENT_DIR}\\tests\\images", "image_01.jpg")
     response = requests.request(
         "PUT", url, headers=header, data=json.dumps(random_payload)
     )
     updated_response: dict = json.loads(response.text)
-    time.sleep(1)
     assert_that(response.status_code).is_equal_to(400)
-    assert_that(updated_response["detail"]).is_equal_to("Invalid id")
+    assert_that(updated_response["detail"]).is_equal_to("Question not found")

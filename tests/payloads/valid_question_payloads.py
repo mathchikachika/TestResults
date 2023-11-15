@@ -24,7 +24,7 @@ def get_valid_successful_college_payload():
 
 def get_valid_successful_mathworld_payload():
     return {
-        "question_type": "MathWorld",
+        "question_type": "Mathworld",
         "grade_level": 3,
         "teks_code": "A.1",
         "subject": "Algebra I",
