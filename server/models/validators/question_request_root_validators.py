@@ -626,7 +626,6 @@ def validate_difficulty(v):
 
 
 def validate_option_content(v):
-    print(v)
     if str(type(v)) == "<class 'str'>":
         if v.strip() == "":
             raise HTTPException(

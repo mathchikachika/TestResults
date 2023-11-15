@@ -55,13 +55,38 @@ def question_parser(question):
 
 
 def updated_question_parser(question):
-    if question["question_type"].strip().upper() == "STAAR":
-        question = UpdatedStaarQuestion.model_validate(question)
-    elif question["question_type"].strip().title() == "College level":
-        question = UpdatedCollegeQuestion.model_validate(question)
-    elif question["question_type"].strip().title() == "Mathworld":
-        question = UpdatedMathworldQuestion.model_validate(question)
-    return question
+    if "question_type" not in question:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, detail="question_type is required"
+        )
+    if type(question["question_type"]) is not str:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, detail="question_type must be a string"
+        )
+    elif "question_img" not in question:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, detail="question_img is required"
+        )
+    elif any("unit" not in item for item in question["options"]):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="unit is required")
+    else:
+        question_type = question["question_type"].strip()
+
+        if question["question_type"].strip().upper() == "STAAR":
+            question = UpdatedStaarQuestion.model_validate(question)
+        elif question["question_type"].strip().title() == "College Level":
+            question = UpdatedCollegeQuestion.model_validate(question)
+        elif question["question_type"].strip().title() == "Mathworld":
+            question = UpdatedMathworldQuestion.model_validate(question)
+        elif question_type:
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST, detail="invalid question type"
+            )
+        else:
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST, detail="question_type is required"
+            )
+        return question
 
 
 def account_parser(account):

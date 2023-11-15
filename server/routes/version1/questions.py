@@ -243,7 +243,7 @@ async def update_question(
             await StaarQuestion.get(question_id)
             if updated_question.question_type == "STAAR"
             else await CollegeQuestion.get(question_id)
-            if updated_question.question_type == "College level"
+            if updated_question.question_type == "College Level"
             else await MathworldQuestion.get(question_id)
         )
 
@@ -266,7 +266,9 @@ async def update_question(
         if str(e) == "404":
             raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Question not found")
 
-        if "not a valid ObjectId" in str(e):
+        if "not a valid ObjectId" in str(
+            e
+        ) or "Id must be of type PydanticObjectId" in str(e):
             raise HTTPException(
                 status.HTTP_400_BAD_REQUEST, detail="Question not found"
             )

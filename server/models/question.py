@@ -127,7 +127,7 @@ class MathworldQuestion(Question):
 
 
 class UpdatedStaarQuestion(StaarQuestion):
-    update_note: str = Field()
+    update_note: str
     updated_by: Optional[str] = None
     updated_at: Optional[datetime] = None
     options: List[Option]
