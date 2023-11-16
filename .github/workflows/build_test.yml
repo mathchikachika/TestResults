@@ -1,0 +1,148 @@
+name: mathworld api testing workflow
+on:
+    push:
+      branches:
+          [ DEVELOPMENT ]
+    pull_request:
+        branches:
+          [ main ]
+    workflow_dispatch:
+        
+jobs:  
+  build-test:
+    runs-on: ubuntu-latest    
+    env: 
+        SLACK_WEBHOOK_URL: ${{secrets.SLACK_WEBHOOK_URL}}
+        PAT_YSH: ${{secrets.YSH_PAT}}
+        TEST_REPORT: ///home/runner/work/Admin-MathWorldBackEnd/Admin-MathWorldBackEnd/tests/MathWorldAPIReports 
+        RUN_NUMBER: $GITHUB_RUN_NUMBER
+        RUNER_NAME: $RUNNER_NAME
+        ACTION_NAME: $GITHUB_ACTION       
+        
+    steps:                
+      - name: Get Version
+        id: version       
+        run: |          
+          echo '**** VERSION *******: ' $(cat version.txt)
+          echo '**** RUN NUMBER ****: ' ${{env.RUN_NUMBER}}   
+        env:
+          TEST_REPORT: ///home/runner/work/Admin-MathWorldBackEnd/Admin-MathWorldBackEnd/tests/MathWorldAPIReports
+          RUN_NUMBER: $GITHUB_RUN_NUMBER
+          RUNER_NAME: $RUNNER_NAME
+          ACTION_NAME: $GITHUB_ACTION               
+     
+      - name: Checkout MathWorld
+        id: Checkout
+        uses: actions/checkout@v2
+
+      - name: Cache Pip 
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/linux_requirements.txt') }}
+          restore-keys: | 
+            ${{ runner.os }}-pip-
+          
+      - name: Setup Python 
+        id: Setup_Python
+        run: |
+            python3 --version
+            python3 -m venv venv             
+            source venv/bin/activate
+            
+      - name: Install & Configure Dependencies
+        id: Dependencies
+        run: |
+            source venv/bin/activate
+            pip install --upgrade pip
+            pip install pytest pytest-xdist
+            pip install -r linux_requirements.txt   
+            pip install --upgrade fastapi
+            sudo apt-get install python3-tk
+            sudo apt-get update -y  
+            if [ ! -d "/src/" ]; then sudo mkdir -p "/src/"; fi             
+            if [ ! -d "/src/logs" ]; then sudo mkdir -p "/src/logs"; fi             
+            if [ -f "/src/logs/question.log" ]; then sudo touch "/src/logs/question.log"; fi          
+            sudo apt install npm -y
+            sudo apt --fix-broken install 
+            sudo apt install npm -y
+            sudo apt update
+            sudo apt install nodejs -y            
+            npm install -g allure-commandline --save-dev  -y
+            sudo apt install openjdk-19-jre-headless  -y    
+                 
+      - name: Start Web Server
+        id: Start_Web
+        run: |            
+            source venv/bin/activate                            
+            uvicorn src.app:app &
+
+      - name: Setup & Execute Test
+        id: Execute_Test 
+        run: |
+          source venv/bin/activate
+          cd tests         
+          cd MathWorldAPIReports
+          pytest --reruns 4 --reruns-delay 5  -v -s -n 3 --html=index.html --self-contained-html ../question_tests/ ../staff_tests/ ../sharp_tests
+                              
+      - name: Upload Test Artifacts
+        id: Artifacts
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: TestResults
+          path: tests/MathWorldAPIReports
+          
+
+      - name: Push Report Test Details
+        id: Report_Details
+        if: always()
+        run: |
+          cd tests/MathWorldAPIReports          
+          rm -rf TestResults                    
+          git config --global init.defaultBranch main
+          git clone https://github.com/mathchikachika/TestResults.git
+          cd TestResults     
+          [ -f "index.html" ] && rm "index.html"
+          [ -f "pytest_html_report.html" ] && rm "pytest_html_report.html"  
+          [ -f "report.html" ] && rm "report.html"     
+          [ -f "output.json" ] && rm "output.json"  
+          [ -d "archive/" ] && [ -n "$(ls -A archive/)" ] && rm -r "archive/"   
+          [ -d "assets/" ] && [ -n "$(ls -A assets/)" ] && rm -r "assets/"    
+          cd .. 
+          [ -f "index.html" ] && mv "index.html" "TestResults/"  
+          [ -f "pytest_html_report.html" ] && mv "pytest_html_report.html" "TestResults/"  
+          [ -f "report.html" ] && mv "report.html" "TestResults/"     
+          [ -f "output.json" ] && mv "output.json" "TestResults/" 
+          [ -f "../../src/logs/question.log" ] && cp "../../src/logs/question.log" "src/logs/"  
+          if [ -d "assets" ] && [ "$(ls -A assets)" ]; then mv "assets" "TestResults/"; fi
+          if [ -d "archive" ] && [ "$(ls -A archive)" ]; then mv "archive" "TestResults/"; fi
+          cd TestResults
+          git config --global user.email "mathworldtesting@gmail.com"
+          git config --global user.name "mathworldtesting"
+          git remote set-url origin https://mathworldtesting:${{secrets.YSH_PAT}}@github.com/mathchikachika/TestResults.git
+          git add .
+          git commit -m "Test Results Updated"
+          git push
+          git remote set-url origin https://github.com/mathchikachika/TestResults.git
+
+      - name: Successful Build Route
+        uses: someimportantcompany/github-actions-slack-message@v1
+        if: success()
+        with:
+          title: Test Run Status for Admin BackEnd
+          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          text: Build-Test [PASSED], Test Reports = https://mathworldapitestresults.onrender.com          
+          color: success        
+        
+      - name: Failed Build Route for Admin BackEnd
+        uses: someimportantcompany/github-actions-slack-message@v1
+        if: failure()        
+        with:
+          title: Test Run Status for Admin BackEnd       
+          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          text: Build-Test [FAILED], Test Report = https://mathworldapitestresults.onrender.com
+          color: failure
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
+          if: always()

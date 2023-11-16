@@ -20,3 +20,6 @@ def expired_token():
     return {
         "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImhlbHBAZXhhbXBsZS5jb20iLCJleHAiOjE2NjExMzQ4MTN9.QW6TRONFqO4KOZfajIVck3Mgjk3fJpZeAO4IsDguiy8"
     }
+
+def pytest_html_report_title(report):
+    report.title = "MathMatter Admin BackEnd APIs"
