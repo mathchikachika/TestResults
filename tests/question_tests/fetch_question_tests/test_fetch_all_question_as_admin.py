@@ -9,6 +9,8 @@ import requests
 from assertpy import assert_that
 from pytest import fixture
 
+from tests.lib.mw_db import get_db
+
 CURRENT_DIR = os.getcwd()
 PARENT_DIR = os.path.dirname(CURRENT_DIR)
 sys.path.append(CURRENT_DIR)
@@ -20,7 +22,8 @@ import lib.common as common
 import lib.generate_token as generate_token
 import pytest
 from faker import Faker
-from lib.mw_sql import execute_query
+
+# from lib.mw_sql import execute_query
 from lib.requester import Requester
 
 fake = Faker()
@@ -40,11 +43,12 @@ def test_pending_questions(get_admin_token):
     req: Requester = Requester()
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_status: str = "Pending"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {"question_status": question_status}
     )
-    sql_pending_questions: int = len(questions_returned)
+
+    sql_pending_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -56,11 +60,12 @@ def test_approved_questions(get_admin_token):
     req: Requester = Requester()
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_status: str = "Approved"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {"question_status": question_status}
     )
-    sql_approved_questions: int = len(questions_returned)
+
+    sql_approved_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -72,11 +77,12 @@ def test_rejected_questions(get_admin_token):
     req: Requester = Requester()
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_status: str = "Rejected"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {"question_status": question_status}
     )
-    sql_rejected_questions: int = len(questions_returned)
+
+    sql_rejected_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -88,11 +94,11 @@ def test_reported_questions(get_admin_token):
     req: Requester = Requester()
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_status: str = "Reported"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {"question_status": question_status}
     )
-    sql_rejected_questions: int = len(questions_returned)
+    sql_rejected_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -105,12 +111,12 @@ def test_staar_type_pending_status(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_type: str = "STAAR"
     question_status: str = "Pending"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}"
+    questions_returned = get_db().question_collection.count_documents(
+        {"question_status": question_status, "question_type": question_type}
     )
-    sql_questions: int = len(questions_returned)
+
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -123,12 +129,11 @@ def test_pending_status_staar_type(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_type: str = "STAAR"
     question_status: str = "Pending"
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {"question_status": question_status, "question_type": question_type}
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -141,12 +146,11 @@ def test_college_level_type_pending_status(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_type: str = "College Level"
     question_status: str = "Pending"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}"
+    questions_returned = get_db().question_collection.count_documents(
+        {"question_status": question_status, "question_type": question_type}
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -159,12 +163,11 @@ def test_pending_status_college_level_type(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_type: str = "College Level"
     question_status: str = "Pending"
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {"question_status": question_status, "question_type": question_type}
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -177,12 +180,11 @@ def test_pending_status_mathworld_type(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_type: str = "Mathworld"
     question_status: str = "Pending"
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {"question_status": question_status, "question_type": question_type}
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -195,12 +197,11 @@ def test_mathworld_type_pending_status(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_type: str = "Mathworld"
     question_status: str = "Pending"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}"
+    questions_returned = get_db().question_collection.count_documents(
+        {"question_status": question_status, "question_type": question_type}
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -213,12 +214,11 @@ def test_approved_status_college_level_type(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_type: str = "College Level"
     question_status: str = "Approved"
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {"question_status": question_status, "question_type": question_type}
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -231,12 +231,11 @@ def test_college_level_type_approved_status(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_type: str = "College Level"
     question_status: str = "Approved"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}"
+    questions_returned = get_db().question_collection.count_documents(
+        {"question_status": question_status, "question_type": question_type}
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -249,12 +248,11 @@ def test_approved_status_mathworld_type(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_type: str = "Mathworld"
     question_status: str = "Approved"
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {"question_status": question_status, "question_type": question_type}
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -267,12 +265,11 @@ def test_mathworld_type_approved_status(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_type: str = "Mathworld"
     question_status: str = "Approved"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}"
+    questions_returned = get_db().question_collection.count_documents(
+        {"question_status": question_status, "question_type": question_type}
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -285,12 +282,11 @@ def test_rejected_status_mathworld_type(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_type: str = "Mathworld"
     question_status: str = "Rejected"
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {"question_status": question_status, "question_type": question_type}
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -303,12 +299,11 @@ def test_mathworld_type_rejected_status(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_type: str = "Mathworld"
     question_status: str = "Rejected"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}"
+    questions_returned = get_db().question_collection.count_documents(
+        {"question_status": question_status, "question_type": question_type}
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -321,12 +316,11 @@ def test_rejected_status_college_level_type(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_type: str = "College Level"
     question_status: str = "Rejected"
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {"question_status": question_status, "question_type": question_type}
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -339,12 +333,11 @@ def test_college_level_type_rejected_status(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_type: str = "College Level"
     question_status: str = "Rejected"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}"
+    questions_returned = get_db().question_collection.count_documents(
+        {"question_status": question_status, "question_type": question_type}
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -357,12 +350,11 @@ def test_rejected_status_staar_type(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_type: str = "STAAR"
     question_status: str = "Rejected"
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {"question_status": question_status, "question_type": question_type}
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -375,12 +367,11 @@ def test_staar_type_rejected_status(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_type: str = "STAAR"
     question_status: str = "Rejected"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}"
+    questions_returned = get_db().question_collection.count_documents(
+        {"question_status": question_status, "question_type": question_type}
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -393,12 +384,11 @@ def test_reported_status_staar_type(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_type: str = "STAAR"
     question_status: str = "Reported"
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {"question_status": question_status, "question_type": question_type}
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -411,12 +401,11 @@ def test_staar_type_reported_status(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_type: str = "STAAR"
     question_status: str = "Reported"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}"
+    questions_returned = get_db().question_collection.count_documents(
+        {"question_status": question_status, "question_type": question_type}
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -429,12 +418,11 @@ def test_reported_status__type(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_type: str = "College Level"
     question_status: str = "Reported"
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {"question_status": question_status, "question_type": question_type}
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -447,12 +435,11 @@ def test_college_level_type_reported_status(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_type: str = "College Level"
     question_status: str = "Reported"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}"
+    questions_returned = get_db().question_collection.count_documents(
+        {"question_status": question_status, "question_type": question_type}
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -465,12 +452,11 @@ def test_reported_status_mathworld_type(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_type: str = "mathworld"
     question_status: str = "Reported"
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {"question_status": question_status, "question_type": question_type}
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -483,12 +469,11 @@ def test_mathworld_type_reported_status(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_type: str = "Mathworld"
     question_status: str = "Reported"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}"
+    questions_returned = get_db().question_collection.count_documents(
+        {"question_status": question_status, "question_type": question_type}
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -501,12 +486,12 @@ def test_ore_response_pending_status(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     response_type: str = "Open Response Exact"
     question_status: str = "Pending"
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}'"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {"question_status": question_status, "response_type": response_type}
     )
-    sql_questions: int = len(questions_returned)
+
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -519,12 +504,11 @@ def test_approved_status_ore_response(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     response_type: str = "Open Response Exact"
     question_status: str = "Approved"
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}'"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {"question_status": question_status, "response_type": response_type}
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -537,12 +521,11 @@ def test_ore_response_approved_status(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     response_type: str = "Open Response Exact"
     question_status: str = "Approved"
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}'"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {"question_status": question_status, "response_type": response_type}
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -555,12 +538,11 @@ def test_rejected_status_ore_response(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     response_type: str = "Open Response Exact"
     question_status: str = "Rejected"
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}'"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {"question_status": question_status, "response_type": response_type}
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -573,12 +555,11 @@ def test_ore_response_rejected_status(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     response_type: str = "Open Response Exact"
     question_status: str = "Rejected"
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}'"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {"question_status": question_status, "response_type": response_type}
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -591,12 +572,11 @@ def test_reported_status_ore_response(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     response_type: str = "Open Response Exact"
     question_status: str = "Reported"
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}'"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {"question_status": question_status, "response_type": response_type}
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -609,12 +589,11 @@ def test_ore_response_reported_status(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     response_type: str = "Open Response Exact"
     question_status: str = "Reported"
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}'"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {"question_status": question_status, "response_type": response_type}
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -627,12 +606,11 @@ def test_pending_status_ror_response(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     response_type: str = "Range Open Response"
     question_status: str = "Reported"
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}'"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {"question_status": question_status, "response_type": response_type}
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -645,12 +623,11 @@ def test_ror_response_pending_status(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     response_type: str = "Range Open Response"
     question_status: str = "Pending"
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}'"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {"question_status": question_status, "response_type": response_type}
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -663,12 +640,16 @@ def test_pending_status_mc_response(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     response_type: str = "Multiple Choice"
     question_status: str = "Reported"
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}'"
+    question_type: str = "Mathworld"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -681,12 +662,16 @@ def test_mc_response_pending_status(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     response_type: str = "Multiple Choice"
     question_status: str = "Pending"
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}'"
+    question_type: str = "Mathworld"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -699,12 +684,16 @@ def test_pending_status_cb_response(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     response_type: str = "Checkbox"
     question_status: str = "Reported"
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}'"
+    question_type: str = "Mathworld"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -717,12 +706,16 @@ def test_cb_response_pending_status(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     response_type: str = "Checkbox"
     question_status: str = "Pending"
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}'"
+    question_type: str = "Mathworld"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -736,12 +729,16 @@ def test_approved_status_ror_response(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     response_type: str = "Range Open Response"
     question_status: str = "Approved"
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}'"
+    question_type: str = "Mathworld"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -754,12 +751,16 @@ def test_ror_response_approved_status(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     response_type: str = "Range Open Response"
     question_status: str = "Approved"
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}'"
+    question_type: str = "Mathworld"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -772,12 +773,16 @@ def test_approved_status_mc_response(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     response_type: str = "Multiple Choice"
     question_status: str = "Approved"
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}'"
+    question_type: str = "Mathworld"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -790,12 +795,16 @@ def test_mc_response_approved_status(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     response_type: str = "Multiple Choice"
     question_status: str = "Approved"
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}'"
+    question_type: str = "Mathworld"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -808,12 +817,16 @@ def test_rejected_status_ror_response(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     response_type: str = "Range Open Response"
     question_status: str = "Rejected"
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}'"
+    question_type: str = "Mathworld"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -826,12 +839,16 @@ def test_ror_response_rejected_status(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     response_type: str = "Range Open Response"
     question_status: str = "Rejected"
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}'"
+    question_type: str = "Mathworld"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -844,12 +861,16 @@ def test_reported_status_ror_response(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     response_type: str = "Range Open Response"
     question_status: str = "Reported"
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}'"
+    question_type: str = "Mathworld"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -862,12 +883,16 @@ def test_ror_response_reported_status(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     response_type: str = "Range Open Response"
     question_status: str = "Reported"
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}'"
+    question_type: str = "Mathworld"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -880,12 +905,16 @@ def test_rejected_status_mc_response(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     response_type: str = "Checkbox"
     question_status: str = "Rejected"
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}'"
+    question_type: str = "Mathworld"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -898,12 +927,16 @@ def test_mc_response_rejected_status(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     response_type: str = "Checkbox"
     question_status: str = "Rejected"
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}'"
+    question_type: str = "Mathworld"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -916,12 +949,16 @@ def test_reported_status_mc_response(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     response_type: str = "Multiple Choice"
     question_status: str = "Reported"
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}'"
+    question_type: str = "Mathworld"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -934,12 +971,16 @@ def test_mc_response_reported_status(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     response_type: str = "Multiple Choice"
     question_status: str = "Reported"
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}'"
+    question_type: str = "Mathworld"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -952,12 +993,16 @@ def test_rejected_status_cb_response(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     response_type: str = "Checkbox"
     question_status: str = "Rejected"
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}'"
+    question_type: str = "Mathworld"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -970,12 +1015,16 @@ def test_cb_response_rejected_status(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     response_type: str = "Checkbox"
     question_status: str = "Rejected"
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}'"
+    question_type: str = "Mathworld"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -988,12 +1037,16 @@ def test_cb_response_reported_status(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     response_type: str = "Checkbox"
     question_status: str = "Reported"
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}'"
+    question_type: str = "Mathworld"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1006,12 +1059,16 @@ def test_reported_status_cb_response(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     response_type: str = "Checkbox"
     question_status: str = "Reported"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}'"
+    question_type: str = "Mathworld"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1023,14 +1080,17 @@ def test_pending_status_staar_type_ore_response(get_admin_token):
     req: Requester = Requester()
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_status: str = "Pending"
-    question_type: str = "STAAR"
     response_type: str = "Open Response Exact"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    question_type: str = "STAAR"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1042,14 +1102,17 @@ def test_approved_status_staar_type_ore_response(get_admin_token):
     req: Requester = Requester()
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_status: str = "Approved"
-    question_type: str = "STAAR"
     response_type: str = "Open Response Exact"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    question_type: str = "STAAR"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1063,12 +1126,15 @@ def test_rejected_status_staar_type_ore_response(get_admin_token):
     question_status: str = "Rejected"
     question_type: str = "STAAR"
     response_type: str = "Open Response Exact"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1082,12 +1148,15 @@ def test_reported_status_staar_type_ore_response(get_admin_token):
     question_status: str = "Reported"
     question_type: str = "STAAR"
     response_type: str = "Open Response Exact"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1101,12 +1170,15 @@ def test_pending_status_college_type_ore_response(get_admin_token):
     question_status: str = "Pending"
     question_type: str = "College Level"
     response_type: str = "Open Response Exact"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1120,12 +1192,15 @@ def test_approved_status_college_type_ore_response(get_admin_token):
     question_status: str = "Approved"
     question_type: str = "College Level"
     response_type: str = "Open Response Exact"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1139,12 +1214,15 @@ def test_rejected_status_college_type_ore_response(get_admin_token):
     question_status: str = "Rejected"
     question_type: str = "College Level"
     response_type: str = "Open Response Exact"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1158,12 +1236,15 @@ def test_reported_status_college_type_ore_response(get_admin_token):
     question_status: str = "Reported"
     question_type: str = "College Level"
     response_type: str = "Open Response Exact"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1177,12 +1258,15 @@ def test_pending_status_mathworld_type_ore_response(get_admin_token):
     question_status: str = "Pending"
     question_type: str = "Mathworld"
     response_type: str = "Open Response Exact"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1196,12 +1280,15 @@ def test_approved_status_mathworld_type_ore_response(get_admin_token):
     question_status: str = "Approved"
     question_type: str = "Mathworld"
     response_type: str = "Open Response Exact"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1215,12 +1302,15 @@ def test_rejected_status_mathworld_type_ore_response(get_admin_token):
     question_status: str = "Rejected"
     question_type: str = "Mathworld"
     response_type: str = "Open Response Exact"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1234,12 +1324,15 @@ def test_reported_status_mathworld_type_ore_response(get_admin_token):
     question_status: str = "Reported"
     question_type: str = "Mathworld"
     response_type: str = "Open Response Exact"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1253,12 +1346,15 @@ def test_pending_status_college_type_ror_response(get_admin_token):
     question_status: str = "Pending"
     question_type: str = "College Level"
     response_type: str = "Range Open Response"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1272,12 +1368,15 @@ def test_approved_status_college_type_ror_response(get_admin_token):
     question_status: str = "Approved"
     question_type: str = "College Level"
     response_type: str = "Range Open Response"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1291,12 +1390,15 @@ def test_rejected_status_college_type_ror_response(get_admin_token):
     question_status: str = "Rejected"
     question_type: str = "College Level"
     response_type: str = "Range Open Response"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1310,12 +1412,15 @@ def test_reported_status_college_type_ror_response(get_admin_token):
     question_status: str = "Reported"
     question_type: str = "College Level"
     response_type: str = "Range Open Response"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1329,12 +1434,15 @@ def test_pending_status_mathworld_type_ror_response(get_admin_token):
     question_status: str = "Pending"
     question_type: str = "Mathworld"
     response_type: str = "Range Open Response"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1348,12 +1456,15 @@ def test_approved_status_mathworld_type_ror_response(get_admin_token):
     question_status: str = "Approved"
     question_type: str = "Mathworld"
     response_type: str = "Range Open Response"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1367,12 +1478,15 @@ def test_rejected_status_mathworld_type_ror_response(get_admin_token):
     question_status: str = "Rejected"
     question_type: str = "Mathworld"
     response_type: str = "Range Open Response"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1386,12 +1500,15 @@ def test_reported_status_mathworld_type_ror_response(get_admin_token):
     question_status: str = "Reported"
     question_type: str = "Mathworld"
     response_type: str = "Range Open Response"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1405,12 +1522,15 @@ def test_pending_status_staar_type_mc_response(get_admin_token):
     question_status: str = "Pending"
     question_type: str = "STAAR"
     response_type: str = "Multiple Choice"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1424,12 +1544,15 @@ def test_approved_status_staar_type_mc_response(get_admin_token):
     question_status: str = "Approved"
     question_type: str = "STAAR"
     response_type: str = "Multiple Choice"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1443,12 +1566,15 @@ def test_rejected_status_staar_type_mc_response(get_admin_token):
     question_status: str = "Rejected"
     question_type: str = "STAAR"
     response_type: str = "Multiple Choice"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1462,12 +1588,15 @@ def test_reported_status_staar_type_mc_response(get_admin_token):
     question_status: str = "Reported"
     question_type: str = "STAAR"
     response_type: str = "Multiple Choice"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1481,12 +1610,15 @@ def test_pending_status_college_type_mc_response(get_admin_token):
     question_status: str = "Pending"
     question_type: str = "College Level"
     response_type: str = "Multiple Choice"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1500,12 +1632,15 @@ def test_approved_status_college_type_mc_response(get_admin_token):
     question_status: str = "Approved"
     question_type: str = "College Level"
     response_type: str = "Multiple Choice"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1519,12 +1654,15 @@ def test_rejected_status_college_type_mc_response(get_admin_token):
     question_status: str = "Rejected"
     question_type: str = "College Level"
     response_type: str = "Multiple Choice"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1538,12 +1676,15 @@ def test_reported_status_college_type_mc_response(get_admin_token):
     question_status: str = "Reported"
     question_type: str = "College Level"
     response_type: str = "Multiple Choice"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1557,12 +1698,15 @@ def test_pending_status_mathworld_type_mc_response(get_admin_token):
     question_status: str = "Pending"
     question_type: str = "Mathworld"
     response_type: str = "Multiple Choice"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1576,12 +1720,15 @@ def test_approved_status_mathworld_type_mc_response(get_admin_token):
     question_status: str = "Approved"
     question_type: str = "Mathworld"
     response_type: str = "Multiple Choice"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1595,12 +1742,15 @@ def test_rejected_status_mathworld_type_mc_response(get_admin_token):
     question_status: str = "Rejected"
     question_type: str = "Mathworld"
     response_type: str = "Multiple Choice"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1614,12 +1764,15 @@ def test_reported_status_mathworld_type_mc_response(get_admin_token):
     question_status: str = "Reported"
     question_type: str = "Mathworld"
     response_type: str = "Multiple Choice"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1633,15 +1786,20 @@ def test_pending_status_staar_type_cb_response(get_admin_token):
     question_status: str = "Pending"
     question_type: str = "STAAR"
     response_type: str = "Checkbox"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
+
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
+    print(questions)
     assert_that(questions["total"]).is_greater_than_or_equal_to(sql_questions)
 
 
@@ -1652,12 +1810,15 @@ def test_approved_status_staar_type_cb_response(get_admin_token):
     question_status: str = "Approved"
     question_type: str = "STAAR"
     response_type: str = "Checkbox"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1671,12 +1832,15 @@ def test_rejected_status_staar_type_cb_response(get_admin_token):
     question_status: str = "Rejected"
     question_type: str = "STAAR"
     response_type: str = "Checkbox"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1690,12 +1854,15 @@ def test_reported_status_staar_type_cb_response(get_admin_token):
     question_status: str = "Reported"
     question_type: str = "STAAR"
     response_type: str = "Checkbox"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1709,12 +1876,15 @@ def test_pending_status_college_type_cb_response(get_admin_token):
     question_status: str = "Reported"
     question_type: str = "College Level"
     response_type: str = "Checkbox"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1728,12 +1898,15 @@ def test_approved_status_college_type_cb_response(get_admin_token):
     question_status: str = "Approved"
     question_type: str = "College Level"
     response_type: str = "Checkbox"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1747,12 +1920,15 @@ def test_rejected_status_college_type_cb_response(get_admin_token):
     question_status: str = "Rejected"
     question_type: str = "College Level"
     response_type: str = "Checkbox"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1766,12 +1942,15 @@ def test_reported_status_college_type_cb_response(get_admin_token):
     question_status: str = "Reported"
     question_type: str = "College Level"
     response_type: str = "Checkbox"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1785,12 +1964,15 @@ def test_pending_status_mathworld_type_cb_response(get_admin_token):
     question_status: str = "Pending"
     question_type: str = "Mathworld"
     response_type: str = "Checkbox"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1804,12 +1986,15 @@ def test_approved_status_mathworld_type_cb_response(get_admin_token):
     question_status: str = "Approved"
     question_type: str = "Mathworld"
     response_type: str = "Checkbox"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1823,12 +2008,15 @@ def test_rejected_status_mathworld_type_cb_response(get_admin_token):
     question_status: str = "Rejected"
     question_type: str = "Mathworld"
     response_type: str = "Checkbox"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1842,12 +2030,15 @@ def test_reported_status_mathworld_type_cb_response(get_admin_token):
     question_status: str = "Reported    "
     question_type: str = "Mathworld"
     response_type: str = "Checkbox"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}"
-    questions_returned: list = execute_query(
-        f"SELECT * FROM mathworld.question WHERE status = '{question_status}'\
-          AND response_type = '{response_type}' AND question_type = '{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&response_type={response_type}&question_status={question_status}"
+    questions_returned = get_db().question_collection.count_documents(
+        {
+            "question_type": question_type,
+            "question_status": question_status,
+            "response_type": response_type,
+        }
     )
-    sql_questions: int = len(questions_returned)
+    sql_questions: int = questions_returned
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1863,7 +2054,7 @@ def test_pending_questions_page_1(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_status: str = "Pending"
     page_num = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1877,7 +2068,7 @@ def test_approved_questions_page_1(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_status: str = "Approved"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1891,7 +2082,7 @@ def test_rejected_questions_page_1(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_status: str = "Rejected"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1905,7 +2096,7 @@ def test_reported_questions_page_1(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_status: str = "Reported"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1920,7 +2111,7 @@ def test_staar_type_pending_status_page_1(get_admin_token):
     question_type: str = "STAAR"
     question_status: str = "Pending"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1935,7 +2126,7 @@ def test_pending_status_staar_type_page_1(get_admin_token):
     question_type: str = "STAAR"
     question_status: str = "Pending"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1950,7 +2141,7 @@ def test_college_level_type_pending_status_page_1(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Pending"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1965,7 +2156,7 @@ def test_pending_status_college_level_type_page_1(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Pending"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1980,7 +2171,7 @@ def test_pending_status_mathworld_type_Page_1(get_admin_token):
     question_type: str = "Mathworld"
     question_status: str = "Pending"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -1995,7 +2186,7 @@ def test_mathworld_type_pending_status_page_1(get_admin_token):
     question_type: str = "Mathworld"
     question_status: str = "Pending"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&page_num={page_num}&question_type={question_type}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&page_num={page_num}&question_type={question_type}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2010,7 +2201,7 @@ def test_approved_status_college_level_type_page_1(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Approved"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&page_num={page_num}&question_status={question_status}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&page_num={page_num}&question_status={question_status}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2025,7 +2216,7 @@ def test_college_level_type_approved_status_page_1(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Approved"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2040,7 +2231,7 @@ def test_approved_status_mathworld_type_page_1(get_admin_token):
     question_type: str = "Mathworld"
     question_status: str = "Approved"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2055,7 +2246,7 @@ def test_mathworld_type_approved_status_page_1(get_admin_token):
     question_type: str = "Mathworld"
     question_status: str = "Approved"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2070,7 +2261,7 @@ def test_rejected_status_mathworld_type_page_1(get_admin_token):
     question_type: str = "Mathworld"
     question_status: str = "Rejected"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2085,7 +2276,7 @@ def test_mathworld_type_rejected_status_page_1(get_admin_token):
     question_type: str = "Mathworld"
     question_status: str = "Rejected"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2100,7 +2291,7 @@ def test_rejected_status_college_level_type_page_1(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Rejected"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2115,7 +2306,7 @@ def test_college_level_type_rejected_status_page_1(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Rejected"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2130,7 +2321,7 @@ def test_rejected_status_staar_type_page_1(get_admin_token):
     question_type: str = "STAAR"
     question_status: str = "Rejected"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2145,7 +2336,7 @@ def test_staar_type_rejected_status_page_1(get_admin_token):
     question_type: str = "STAAR"
     question_status: str = "Rejected"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2160,7 +2351,7 @@ def test_reported_status_staar_type_page_1(get_admin_token):
     question_type: str = "STAAR"
     question_status: str = "Reported"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2175,7 +2366,7 @@ def test_staar_type_reported_status_page_1(get_admin_token):
     question_type: str = "STAAR"
     question_status: str = "Reported"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2190,7 +2381,7 @@ def test_reported_status__type_page_1(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Reported"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2205,7 +2396,7 @@ def test_college_level_type_reported_status_page_1(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Reported"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2221,9 +2412,9 @@ def test_reported_status_mathworld_type_page_1(get_admin_token):
     question_status: str = "Reported"
     page_num: int = 1
     create_response: dict = common.create_a_mathworld_question("admin")
-    question_uuid: str = create_response["question_uuid"]
-    update_response = common.update_question_status(question_uuid, question_status)
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    question_id: str = create_response["question_id"]
+    update_response = common.update_question_status(question_id, question_status)
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2240,9 +2431,9 @@ def test_mathworld_type_reported_status_page_1(get_admin_token):
     page_num: int = 1
     create_response: dict = common.create_a_mathworld_question("admin")
     update_response = common.update_question_status(
-        create_response["question_uuid"], question_status
+        create_response["question_id"], question_status
     )
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2257,7 +2448,7 @@ def test_pending_status_ore_response_page_1(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Pending"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2272,7 +2463,7 @@ def test_ore_response_pending_status_page_1(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Pending"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2287,7 +2478,7 @@ def test_approved_status_ore_response_page_1(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Approved"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2302,7 +2493,7 @@ def test_ore_response_approved_status_page_1(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Approved"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2317,7 +2508,7 @@ def test_rejected_status_ore_response_page_1(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Rejected"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2332,7 +2523,7 @@ def test_ore_response_rejected_status_page_1(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Rejected"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2347,7 +2538,7 @@ def test_reported_status_ore_response_page_1(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Reported"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2362,7 +2553,7 @@ def test_ore_response_reported_status_page_1(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Reported"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2377,7 +2568,7 @@ def test_pending_status_ror_response_page_1(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Reported"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2392,7 +2583,7 @@ def test_ror_response_pending_status_page_1(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Pending"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2407,7 +2598,7 @@ def test_pending_status_mc_response_page_1(get_admin_token):
     response_type: str = "Multiple Choice"
     question_status: str = "Reported"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2422,7 +2613,7 @@ def test_mc_response_pending_status_page_1(get_admin_token):
     response_type: str = "Multiple Choice"
     question_status: str = "Pending"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2437,7 +2628,7 @@ def test_pending_status_cb_response_page_1(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Reported"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2452,7 +2643,7 @@ def test_cb_response_pending_status_page_1(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Pending"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2467,8 +2658,26 @@ def test_approved_status_ror_response_page_1(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     response_type: str = "Range Open Response"
     question_status: str = "Approved"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
+    # json_patch_response = json.loads(patch_response.text)
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2482,8 +2691,25 @@ def test_ror_response_approved_status_page_1(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     response_type: str = "Range Open Response"
     question_status: str = "Approved"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2498,7 +2724,7 @@ def test_approved_status_mc_response_page_1(get_admin_token):
     response_type: str = "Multiple Choice"
     question_status: str = "Approved"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2513,7 +2739,7 @@ def test_mc_response_approved_status_page_1(get_admin_token):
     response_type: str = "Multiple Choice"
     question_status: str = "Approved"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2528,7 +2754,7 @@ def test_rejected_status_ror_response_page_1(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Rejected"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2543,7 +2769,7 @@ def test_ror_response_rejected_status_page_1(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Rejected"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2558,7 +2784,7 @@ def test_reported_status_ror_response_page_1(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Reported"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2573,7 +2799,7 @@ def test_ror_response_reported_status_page_1(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Reported"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2588,7 +2814,7 @@ def test_rejected_status_mc_response_page_1(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Rejected"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2603,7 +2829,7 @@ def test_mc_response_rejected_status_page_1(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Rejected"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2618,7 +2844,7 @@ def test_reported_status_mc_response_page_1(get_admin_token):
     response_type: str = "Multiple Choice"
     question_status: str = "Reported"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2633,7 +2859,7 @@ def test_mc_response_reported_status_page_1(get_admin_token):
     response_type: str = "Multiple Choice"
     question_status: str = "Reported"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2648,7 +2874,7 @@ def test_rejected_status_cb_response_page_1(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Rejected"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2663,7 +2889,7 @@ def test_cb_response_rejected_status_page_1(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Rejected"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2678,7 +2904,7 @@ def test_cb_response_reported_status_page_1(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Reported"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2693,7 +2919,7 @@ def test_reported_status_cb_response_page_1(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Reported"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2709,7 +2935,7 @@ def test_pending_status_staar_type_ore_response_page_1(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Open Response Exact"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2725,7 +2951,7 @@ def test_approved_status_staar_type_ore_response_page_1(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Open Response Exact"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2741,7 +2967,7 @@ def test_rejected_status_staar_type_ore_response_page_1(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Open Response Exact"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2757,7 +2983,7 @@ def test_reported_status_staar_type_ore_response_page_1(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Open Response Exact"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2773,7 +2999,7 @@ def test_pending_status_college_type_ore_response_page_1(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Open Response Exact"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2789,7 +3015,7 @@ def test_approved_status_college_type_ore_response_page_1(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Open Response Exact"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2805,7 +3031,7 @@ def test_rejected_status_college_type_ore_response_page_1(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Open Response Exact"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2821,7 +3047,7 @@ def test_reported_status_college_type_ore_response_page_1(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Open Response Exact"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2837,7 +3063,7 @@ def test_pending_status_mathworld_type_ore_response_page_1(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Open Response Exact"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2853,7 +3079,7 @@ def test_approved_status_mathworld_type_ore_response_page_1(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Open Response Exact"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2869,7 +3095,7 @@ def test_rejected_status_mathworld_type_ore_response_page_1(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Open Response Exact"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2885,7 +3111,7 @@ def test_reported_status_mathworld_type_ore_response_page_1(get_admin_token):
     question_type: str = "Mathworld"
     page_num: int = 1
     response_type: str = "Open Response Exact"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2901,7 +3127,7 @@ def test_pending_status_college_type_ror_response_page_1(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Range Open Response"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2916,11 +3142,32 @@ def test_approved_status_college_type_ror_response_page_1(get_admin_token):
     question_status: str = "Approved"
     question_type: str = "College Level"
     response_type: str = "Range Open Response"
+
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
+    # json_patch_response = json.loads(patch_response.text)
+
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
+    print(questions)
     assert questions["page"] == page_num
     assert questions["data"] != []
 
@@ -2932,8 +3179,26 @@ def test_rejected_status_college_type_ror_response_page_1(get_admin_token):
     question_status: str = "Rejected"
     question_type: str = "College Level"
     response_type: str = "Range Open Response"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
+    # json_patch_response = json.loads(patch_response.text)
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2948,8 +3213,26 @@ def test_reported_status_college_type_ror_response_page_1(get_admin_token):
     question_status: str = "Reported"
     question_type: str = "College Level"
     response_type: str = "Range Open Response"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
+    # json_patch_response = json.loads(patch_response.text)
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2965,7 +3248,25 @@ def test_pending_status_mathworld_type_ror_response_page_1(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Range Open Response"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
+    # json_patch_response = json.loads(patch_response.text)
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2980,8 +3281,27 @@ def test_approved_status_mathworld_type_ror_response_page_1(get_admin_token):
     question_status: str = "Approved"
     question_type: str = "Mathworld"
     response_type: str = "Range Open Response"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
+    # json_patch_response = json.loads(patch_response.text)
+
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -2996,8 +3316,26 @@ def test_rejected_status_mathworld_type_ror_response_page_1(get_admin_token):
     question_status: str = "Rejected"
     question_type: str = "Mathworld"
     response_type: str = "Range Open Response"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
+    # json_patch_response = json.loads(patch_response.text)
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3016,9 +3354,9 @@ def test_reported_status_mathworld_type_ror_response_page_1(get_admin_token):
     mathworld_response: dict = common.create_a_mathworld_question(
         "admin", response_type
     )
-    qustion_uuid: str = mathworld_response["question_uuid"]
+    qustion_uuid: str = mathworld_response["question_id"]
     mathworld_status = common.update_question_status(qustion_uuid, question_new_status)
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_new_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_new_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3034,7 +3372,7 @@ def test_pending_status_staar_type_mc_response_page_1(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Multiple Choice"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3049,8 +3387,26 @@ def test_approved_status_staar_type_mc_response_page_1(get_admin_token):
     question_status: str = "Approved"
     question_type: str = "STAAR"
     response_type: str = "Multiple Choice"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
+    # json_patch_response = json.loads(patch_response.text)
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3065,8 +3421,26 @@ def test_rejected_status_staar_type_mc_response_page_1(get_admin_token):
     question_status: str = "Rejected"
     question_type: str = "STAAR"
     response_type: str = "Multiple Choice"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
+    # json_patch_response = json.loads(patch_response.text)
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3081,8 +3455,26 @@ def test_reported_status_staar_type_mc_response_page_1(get_admin_token):
     question_status: str = "Reported"
     question_type: str = "STAAR"
     response_type: str = "Multiple Choice"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
+    # json_patch_response = json.loads(patch_response.text)
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3098,7 +3490,7 @@ def test_pending_status_college_type_mc_response_page_1(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Multiple Choice"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3113,11 +3505,11 @@ def test_approved_status_college_type_mc_response_page_1(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Multiple Choice"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     mathworld_response: dict = common.create_a_mathworld_question(
         "admin", response_type
     )
-    qustion_uuid: str = mathworld_response["question_uuid"]
+    qustion_uuid: str = mathworld_response["question_id"]
     mathworld_status = common.update_question_status(qustion_uuid, response_type)
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
@@ -3133,8 +3525,26 @@ def test_rejected_status_college_type_mc_response_page_1(get_admin_token):
     question_status: str = "Rejected"
     question_type: str = "College Level"
     response_type: str = "Multiple Choice"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
+    # json_patch_response = json.loads(patch_response.text)
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3149,8 +3559,26 @@ def test_reported_status_college_type_mc_response_page_1(get_admin_token):
     question_status: str = "Reported"
     question_type: str = "College Level"
     response_type: str = "Multiple Choice"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
+    # json_patch_response = json.loads(patch_response.text)
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3167,9 +3595,9 @@ def test_pending_status_mathworld_type_mc_response_page_1(get_admin_token):
     response_type: str = "Multiple Choice"
     page_num: int = 1
     create_response: dict = common.create_a_mathworld_question("admin", response_type)
-    question_uuid: str = create_response["question_uuid"]
-    update_response = common.update_question_status(question_uuid, question_status)
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    question_id: str = create_response["question_id"]
+    update_response = common.update_question_status(question_id, question_status)
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3185,7 +3613,7 @@ def test_approved_status_mathworld_type_mc_response_page_1(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Multiple Choice"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3200,8 +3628,26 @@ def test_rejected_status_mathworld_type_mc_response_page_1(get_admin_token):
     question_status: str = "Rejected"
     question_type: str = "Mathworld"
     response_type: str = "Multiple Choice"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
+    # json_patch_response = json.loads(patch_response.text)
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3220,9 +3666,9 @@ def test_reported_status_mathworld_type_mc_response_page_1(get_admin_token):
     mathworld_response = common.create_a_mathworld_question("admin", response_type)
     time.sleep(1)
     mathworld_status = common.update_question_status(
-        mathworld_response["question_uuid"], question_status
+        mathworld_response["question_id"], question_status
     )
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3238,7 +3684,7 @@ def test_pending_status_staar_type_cb_response_page_1(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Checkbox"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3253,8 +3699,26 @@ def test_approved_status_staar_type_cb_response_page_1(get_admin_token):
     question_status: str = "Approved"
     question_type: str = "STAAR"
     response_type: str = "Checkbox"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
+    # json_patch_response = json.loads(patch_response.text)
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3269,8 +3733,25 @@ def test_rejected_status_staar_type_cb_response_page_1(get_admin_token):
     question_status: str = "Rejected"
     question_type: str = "STAAR"
     response_type: str = "Checkbox"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3287,7 +3768,7 @@ def test_reported_status_staar_type_cb_response_page_1(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Checkbox"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3302,7 +3783,7 @@ def test_pending_status_college_type_cb_response_page_1(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Checkbox"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3317,8 +3798,25 @@ def test_approved_status_college_type_cb_response_page_1(get_admin_token):
     question_status: str = "Approved"
     question_type: str = "College Level"
     response_type: str = "Checkbox"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3337,9 +3835,9 @@ def test_rejected_status_college_type_cb_response_page_1(get_admin_token):
     create_response = common.create_a_college_question("admin", response_type)
     assert_that(create_response["detail"]).is_equal_to("Successfully Added Question")
     update_response = common.update_question_status(
-        create_response["question_uuid"], question_status
+        create_response["question_id"], question_status
     )
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3355,7 +3853,7 @@ def test_reported_status_college_type_cb_response_page_1(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Checkbox"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3370,8 +3868,26 @@ def test_pending_status_mathworld_type_cb_response_page_1(get_admin_token):
     question_status: str = "Pending"
     question_type: str = "Mathworld"
     response_type: str = "Checkbox"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
+    # json_patch_response = json.loads(patch_response.text)
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3386,8 +3902,26 @@ def test_approved_status_mathworld_type_cb_response_page_1(get_admin_token):
     question_status: str = "Approved"
     question_type: str = "Mathworld"
     response_type: str = "Checkbox"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
+    # json_patch_response = json.loads(patch_response.text)
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3403,7 +3937,7 @@ def test_rejected_status_mathworld_type_cb_response_page_1(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Checkbox"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3422,9 +3956,9 @@ def test_reported_status_mathworld_type_cb_response_page_1(get_admin_token):
     page_num: int = 1
     mathworld_response = common.create_a_mathworld_question("admin", response_type)
     mathworld_status = common.update_question_status(
-        mathworld_response["question_uuid"], question_status
+        mathworld_response["question_id"], question_status
     )
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3441,7 +3975,7 @@ def test_pending_questions_page_100(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_status: str = "Pending"
     page_num = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3457,9 +3991,9 @@ def test_approved_questions_page_100(get_admin_token):
     page_num: int = 100
     mathworld_response = common.create_a_mathworld_question("admin")
     mathworld_status = common.update_question_status(
-        mathworld_response["question_uuid"], question_status
+        mathworld_response["question_id"], question_status
     )
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3474,9 +4008,9 @@ def test_rejected_questions_page_100(get_admin_token):
     question_status: str = "Rejected"
     page_num: int = 100
     create_response: dict = common.create_a_mathworld_question("admin")
-    question_uuid: str = create_response["question_uuid"]
-    update_response = common.update_question_status(question_uuid, question_status)
-    url: str = f"{req.base_url}/question/fetch/all?question_status='{question_status}'&page_num={page_num}"
+    question_id: str = create_response["question_id"]
+    update_response = common.update_question_status(question_id, question_status)
+    url: str = f"{req.base_url}/v1/questions?question_status='{question_status}'&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3489,7 +4023,7 @@ def test_reported_questions_page_100(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_status: str = "Reported"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3504,7 +4038,7 @@ def test_staar_type_pending_status_page_100(get_admin_token):
     question_type: str = "STAAR"
     question_status: str = "Pending"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3519,7 +4053,7 @@ def test_pending_status_staar_type_page_100(get_admin_token):
     question_type: str = "STAAR"
     question_status: str = "Pending"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3534,7 +4068,7 @@ def test_college_level_type_pending_status_page_100(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Pending"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3549,7 +4083,7 @@ def test_pending_status_college_level_type_page_100(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Pending"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3565,9 +4099,9 @@ def test_pending_status_mathworld_type_page_100(get_admin_token):
     question_status: str = "Pending"
     page_num: int = 100
     create_response: dict = common.create_a_mathworld_question("admin")
-    question_uuid: str = create_response["question_uuid"]
-    update_response = common.update_question_status(question_uuid, question_status)
-    url: str = f"{req.base_url}/question/fetch/all?question_type='{question_type}'&question_status='{question_status}'&page_num={page_num}"
+    question_id: str = create_response["question_id"]
+    update_response = common.update_question_status(question_id, question_status)
+    url: str = f"{req.base_url}/v1/questions?question_type='{question_type}'&question_status='{question_status}'&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3582,7 +4116,7 @@ def test_mathworld_type_pending_status_page_100(get_admin_token):
     question_type: str = "Mathworld"
     question_status: str = "Pending"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status='{question_status}'&page_num={page_num}&question_type='{question_type}'"
+    url: str = f"{req.base_url}/v1/questions?question_status='{question_status}'&page_num={page_num}&question_type='{question_type}'"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3597,7 +4131,7 @@ def test_approved_status_college_level_type_page_100(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Approved"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&page_num={page_num}&question_status={question_status}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&page_num={page_num}&question_status={question_status}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3612,7 +4146,7 @@ def test_college_level_type_approved_status_page_100(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Approved"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3628,9 +4162,9 @@ def test_approved_status_mathworld_type_page_100(get_admin_token):
     question_status: str = "Approved"
     page_num: int = 100
     create_response: dict = common.create_a_mathworld_question("admin")
-    question_uuid: str = create_response["question_uuid"]
-    update_response = common.update_question_status(question_uuid, question_status)
-    url: str = f"{req.base_url}/question/fetch/all?question_type='{question_type}'&question_status='{question_status}'&page_num={page_num}"
+    question_id: str = create_response["question_id"]
+    update_response = common.update_question_status(question_id, question_status)
+    url: str = f"{req.base_url}/v1/questions?question_type='{question_type}'&question_status='{question_status}'&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3645,10 +4179,10 @@ def test_mathworld_type_approved_status_page_100(get_admin_token):
     question_type: str = "Mathworld"
     question_status: str = "Approved"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     create_response: dict = common.create_a_mathworld_question("admin")
-    question_uuid: str = create_response["question_uuid"]
-    update_response = common.update_question_status(question_uuid, question_status)
+    question_id: str = create_response["question_id"]
+    update_response = common.update_question_status(question_id, question_status)
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3663,7 +4197,7 @@ def test_rejected_status_mathworld_type_page_100(get_admin_token):
     question_type: str = "Mathworld"
     question_status: str = "Rejected"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3678,7 +4212,7 @@ def test_mathworld_type_rejected_status_page_100(get_admin_token):
     question_type: str = "Mathworld"
     question_status: str = "Rejected"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3693,7 +4227,7 @@ def test_rejected_status_college_level_type_page_100(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Rejected"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3708,7 +4242,7 @@ def test_college_level_type_rejected_status_page_100(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Rejected"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3723,7 +4257,7 @@ def test_rejected_status_staar_type_page_100(get_admin_token):
     question_type: str = "STAAR"
     question_status: str = "Rejected"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3738,7 +4272,7 @@ def test_staar_type_rejected_status_page_100(get_admin_token):
     question_type: str = "STAAR"
     question_status: str = "Rejected"
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3753,7 +4287,7 @@ def test_reported_status_staar_type_page_100(get_admin_token):
     question_type: str = "STAAR"
     question_status: str = "Reported"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?uestion_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?uestion_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3768,7 +4302,7 @@ def test_staar_type_reported_status_page_100(get_admin_token):
     question_type: str = "STAAR"
     question_status: str = "Reported"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3783,7 +4317,7 @@ def test_reported_status__type_page_100(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Reported"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3798,7 +4332,7 @@ def test_college_level_type_reported_status_page_100(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Reported"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3813,7 +4347,7 @@ def test_reported_status_mathworld_type_page_100(get_admin_token):
     question_type: str = "mathworld"
     question_status: str = "Reported"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3828,10 +4362,10 @@ def test_mathworld_type_reported_status_page_100(get_admin_token):
     question_type: str = "Mathworld"
     question_status: str = "Reported"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status='{question_status}'&question_type='{question_type}'&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status='{question_status}'&question_type='{question_type}'&page_num={page_num}"
     create_response: dict = common.create_a_mathworld_question("admin")
-    question_uuid: str = create_response["question_uuid"]
-    update_response = common.update_question_status(question_uuid, question_status)
+    question_id: str = create_response["question_id"]
+    update_response = common.update_question_status(question_id, question_status)
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3846,7 +4380,7 @@ def test_pending_status_ore_response_page_100(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Pending"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3861,7 +4395,7 @@ def test_ore_response_pending_status_page_100(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Pending"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3876,7 +4410,7 @@ def test_approved_status_ore_response_page_100(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Approved"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3891,7 +4425,7 @@ def test_ore_response_approved_status_page_100(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Approved"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3906,7 +4440,7 @@ def test_rejected_status_ore_response_page_100(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Rejected"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3921,7 +4455,7 @@ def test_ore_response_rejected_status_page_100(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Rejected"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3936,7 +4470,7 @@ def test_reported_status_ore_response_page_100(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Reported"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3951,7 +4485,7 @@ def test_ore_response_reported_status_page_100(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Reported"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3966,7 +4500,7 @@ def test_pending_status_ror_response_page_100(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Reported"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3981,7 +4515,7 @@ def test_pending_status_mc_response_page_100(get_admin_token):
     response_type: str = "Multiple Choice"
     question_status: str = "Reported"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -3996,7 +4530,7 @@ def test_mc_response_pending_status_page_100(get_admin_token):
     response_type: str = "Multiple Choice"
     question_status: str = "Pending"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4011,7 +4545,7 @@ def test_pending_status_cb_response_page_100(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Reported"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4026,7 +4560,7 @@ def test_cb_response_pending_status_page_100(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Pending"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4042,7 +4576,7 @@ def test_approved_status_ror_response_page_100(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Approved"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4057,7 +4591,7 @@ def test_ror_response_approved_status_page_100(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Approved"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4072,7 +4606,7 @@ def test_approved_status_mc_response_page_100(get_admin_token):
     response_type: str = "Multiple Choice"
     question_status: str = "Approved"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4087,7 +4621,7 @@ def test_mc_response_approved_status_page_100(get_admin_token):
     response_type: str = "Multiple Choice"
     question_status: str = "Approved"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4102,7 +4636,7 @@ def test_rejected_status_ror_response_page_100(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Rejected"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4117,7 +4651,7 @@ def test_ror_response_rejected_status_page_100(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Rejected"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4132,7 +4666,7 @@ def test_reported_status_ror_response_page_100(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Reported"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4147,7 +4681,7 @@ def test_ror_response_reported_status_page_100(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Reported"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4162,7 +4696,7 @@ def test_rejected_status_mc_response_page_100(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Rejected"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4177,7 +4711,7 @@ def test_mc_response_rejected_status_page_100(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Rejected"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4192,7 +4726,7 @@ def test_reported_status_mc_response_page_100(get_admin_token):
     response_type: str = "Multiple Choice"
     question_status: str = "Reported"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4207,7 +4741,7 @@ def test_mc_response_reported_status_page_100(get_admin_token):
     response_type: str = "Multiple Choice"
     question_status: str = "Reported"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4222,7 +4756,7 @@ def test_rejected_status_cb_response_page_100(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Rejected"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4237,7 +4771,7 @@ def test_cb_response_rejected_status_page_100(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Rejected"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4252,7 +4786,7 @@ def test_cb_response_reported_status_page_100(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Reported"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4266,7 +4800,7 @@ def test_reported_status_cb_response_page_100(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Reported"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4281,7 +4815,7 @@ def test_pending_status_staar_type_ore_response_page_100(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Open Response Exact"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4297,7 +4831,7 @@ def test_approved_status_staar_type_ore_response_page_100(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Open Response Exact"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4313,7 +4847,7 @@ def test_rejected_status_staar_type_ore_response_page_100(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Open Response Exact"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4329,7 +4863,7 @@ def test_reported_status_staar_type_ore_response_page_100(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Open Response Exact"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4346,7 +4880,7 @@ def test_pending_status_college_type_ore_response_page_100(get_admin_token):
     response_type: str = "Open Response Exact"
     page_num: int = 100
     common.create_a_college_question("admin", response_type)
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4362,7 +4896,7 @@ def test_approved_status_college_type_ore_response_page_100(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Open Response Exact"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4378,7 +4912,7 @@ def test_rejected_status_college_type_ore_response_page_100(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Open Response Exact"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4394,7 +4928,7 @@ def test_reported_status_college_type_ore_response_page_100(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Open Response Exact"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4411,9 +4945,9 @@ def test_pending_status_mathworld_type_ore_response_page_100(get_admin_token):
     response_type: str = "Open Response Exact"
     page_num: int = 100
     create_response: dict = common.create_a_mathworld_question("admin", response_type)
-    question_uuid: str = create_response["question_uuid"]
-    update_response = common.update_question_status(question_uuid, question_status)
-    url: str = f"{req.base_url}/question/fetch/all?question_status='{question_status}'&question_type='{question_type}'&response_type='{response_type}'&page_num={page_num}"
+    question_id: str = create_response["question_id"]
+    update_response = common.update_question_status(question_id, question_status)
+    url: str = f"{req.base_url}/v1/questions?question_status='{question_status}'&question_type='{question_type}'&response_type='{response_type}'&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4429,7 +4963,7 @@ def test_approved_status_mathworld_type_ore_response_page_100(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Open Response Exact"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4445,7 +4979,7 @@ def test_rejected_status_mathworld_type_ore_response_page_100(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Open Response Exact"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4461,7 +4995,7 @@ def test_reported_status_mathworld_type_ore_response_page_100(get_admin_token):
     question_type: str = "Mathworld"
     page_num: int = 100
     response_type: str = "Open Response Exact"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4477,7 +5011,7 @@ def test_pending_status_college_type_ror_response_page_100(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Range Open Response"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4493,7 +5027,7 @@ def test_approved_status_college_type_ror_response_page_100(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Range Open Response"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4509,7 +5043,7 @@ def test_rejected_status_college_type_ror_response_page_100(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Range Open Response"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4525,7 +5059,7 @@ def test_reported_status_college_type_ror_response_page_100(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Range Open Response"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4541,7 +5075,7 @@ def test_pending_status_mathworld_type_ror_response_page_100(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Range Open Response"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4557,7 +5091,7 @@ def test_approved_status_mathworld_type_ror_response_page_100(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Range Open Response"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4573,7 +5107,7 @@ def test_rejected_status_mathworld_type_ror_response_page_100(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Range Open Response"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4594,9 +5128,9 @@ def test_reported_status_mathworld_type_ror_response_page_100(get_admin_token):
         "admin", response_type
     )
     mathworld_status = common.update_question_status(
-        mathworld_response["question_uuid"], question_status
+        mathworld_response["question_id"], question_status
     )
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4612,7 +5146,7 @@ def test_pending_status_staar_type_mc_response_page_100(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Multiple Choice"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4628,7 +5162,7 @@ def test_approved_status_staar_type_mc_response_page_100(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Multiple Choice"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4644,7 +5178,7 @@ def test_rejected_status_staar_type_mc_response_page_100(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Multiple Choice"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4660,7 +5194,7 @@ def test_reported_status_staar_type_mc_response_page_100(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Multiple Choice"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4676,7 +5210,7 @@ def test_pending_status_college_type_mc_response_page_100(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Multiple Choice"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4692,7 +5226,7 @@ def test_approved_status_college_type_mc_response_page_100(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Multiple Choice"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4708,7 +5242,7 @@ def test_rejected_status_college_type_mc_response_page_100(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Multiple Choice"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4724,7 +5258,7 @@ def test_reported_status_college_type_mc_response_page_100(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Multiple Choice"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4740,7 +5274,7 @@ def test_pending_status_mathworld_type_mc_response_page_100(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Multiple Choice"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4756,7 +5290,7 @@ def test_approved_status_mathworld_type_mc_response_page_100(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Multiple Choice"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4772,7 +5306,7 @@ def test_rejected_status_mathworld_type_mc_response_page_100(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Multiple Choice"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4788,7 +5322,7 @@ def test_reported_status_mathworld_type_mc_response_page_100(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Multiple Choice"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4804,10 +5338,11 @@ def test_pending_status_staar_type_cb_response_page_100(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Checkbox"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
+    print(questions)
     assert questions["page"] == page_num
     assert questions["data"] == []
 
@@ -4820,7 +5355,7 @@ def test_approved_status_staar_type_cb_response_page_100(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Checkbox"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4835,11 +5370,29 @@ def test_rejected_status_staar_type_cb_response_page_100(get_admin_token):
     question_status: str = "Rejected"
     question_type: str = "STAAR"
     response_type: str = "Checkbox"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
+    # json_patch_response = json.loads(patch_response.text)
     page_num: int = 100
     create_response: dict = common.create_a_mathworld_question("admin", response_type)
-    question_uuid: str = create_response["question_uuid"]
-    update_response = common.update_question_status(question_uuid, question_status)
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    question_id: str = create_response["question_id"]
+    update_response = common.update_question_status(question_id, question_status)
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4856,9 +5409,9 @@ def test_reported_status_staar_type_cb_response_page_100(get_admin_token):
     response_type: str = "Checkbox"
     page_num: int = 100
     create_response: dict = common.create_a_mathworld_question("admin", response_type)
-    question_uuid: str = create_response["question_uuid"]
-    update_response = common.update_question_status(question_uuid, question_status)
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    question_id: str = create_response["question_id"]
+    update_response = common.update_question_status(question_id, question_status)
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4875,9 +5428,9 @@ def test_pending_status_college_type_cb_response_page_100(get_admin_token):
     response_type: str = "Checkbox"
     page_num: int = 100
     create_response: dict = common.create_a_mathworld_question("admin", response_type)
-    question_uuid: str = create_response["question_uuid"]
-    update_response = common.update_question_status(question_uuid, question_status)
-    url: str = f"{req.base_url}/question/fetch/all?question_status='{question_status}'&question_type='{question_type}'&response_type='{response_type}'&page_num={page_num}"
+    question_id: str = create_response["question_id"]
+    update_response = common.update_question_status(question_id, question_status)
+    url: str = f"{req.base_url}/v1/questions?question_status='{question_status}'&question_type='{question_type}'&response_type='{response_type}'&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4892,8 +5445,26 @@ def test_approved_status_college_type_cb_response_page_100(get_admin_token):
     question_status: str = "Approved"
     question_type: str = "College Level"
     response_type: str = "Checkbox"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
+    # json_patch_response = json.loads(patch_response.text)
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4909,7 +5480,7 @@ def test_rejected_status_college_type_cb_response_page_100(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Checkbox"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4925,7 +5496,7 @@ def test_reported_status_college_type_cb_response_page_100(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Checkbox"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4941,7 +5512,7 @@ def test_pending_status_mathworld_type_cb_response_page_100(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Checkbox"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4957,7 +5528,7 @@ def test_approved_status_mathworld_type_cb_response_page_100(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Checkbox"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4976,9 +5547,9 @@ def test_rejected_status_mathworld_type_cb_response_page_100(get_admin_token):
     create_response: dict = common.create_a_mathworld_question("admin")
     time.sleep(2)
     update_response = common.update_question_status(
-        create_response["question_uuid"], question_status
+        create_response["question_id"], question_status
     )
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -4994,7 +5565,7 @@ def test_reported_status_mathworld_type_cb_response_page_100(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Checkbox"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -5011,7 +5582,7 @@ def test_pending_questions_page_0(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_status: str = "Pending"
     page_num = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5024,7 +5595,7 @@ def test_approved_questions_page_0(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_status: str = "Approved"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5037,7 +5608,7 @@ def test_rejected_questions_page_0(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_status: str = "Rejected"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5050,7 +5621,7 @@ def test_reported_questions_page_0(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_status: str = "Reported"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5064,7 +5635,7 @@ def test_staar_type_pending_status_page_0(get_admin_token):
     question_type: str = "STAAR"
     question_status: str = "Pending"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5078,7 +5649,7 @@ def test_pending_status_staar_type_page_0(get_admin_token):
     question_type: str = "STAAR"
     question_status: str = "Pending"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5092,7 +5663,7 @@ def test_college_level_type_pending_status_page_0(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Pending"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5106,7 +5677,7 @@ def test_pending_status_college_level_type_page_0(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Pending"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5120,7 +5691,7 @@ def test_pending_status_mathworld_type_page_0(get_admin_token):
     question_type: str = "Mathworld"
     question_status: str = "Pending"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5134,7 +5705,7 @@ def test_mathworld_type_pending_status_page_0(get_admin_token):
     question_type: str = "Mathworld"
     question_status: str = "Pending"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&page_num={page_num}&question_type={question_type}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&page_num={page_num}&question_type={question_type}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5148,7 +5719,7 @@ def test_approved_status_college_level_type_page_0(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Approved"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&page_num={page_num}&question_status={question_status}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&page_num={page_num}&question_status={question_status}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5162,7 +5733,7 @@ def test_college_level_type_approved_status_page_0(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Approved"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5176,7 +5747,7 @@ def test_approved_status_mathworld_type_page_0(get_admin_token):
     question_type: str = "Mathworld"
     question_status: str = "Approved"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5190,7 +5761,7 @@ def test_mathworld_type_approved_status_page_0(get_admin_token):
     question_type: str = "Mathworld"
     question_status: str = "Approved"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5198,13 +5769,13 @@ def test_mathworld_type_approved_status_page_0(get_admin_token):
 
 
 @pytest.mark.tc_313
-def test_rejected_status_mathworld_type_page_0(get_admin_token):
+def test_rejected_status_mathworld_type_page_100(get_admin_token):
     req: Requester = Requester()
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_type: str = "Mathworld"
     question_status: str = "Rejected"
     page_num: int = 100
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -5219,7 +5790,7 @@ def test_mathworld_type_rejected_status_page_0(get_admin_token):
     question_type: str = "Mathworld"
     question_status: str = "Rejected"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5233,7 +5804,7 @@ def test_rejected_status_college_level_type_page_0(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Rejected"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5247,7 +5818,7 @@ def test_college_level_type_rejected_status_page_0(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Rejected"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5261,7 +5832,7 @@ def test_rejected_status_staar_type_page_0(get_admin_token):
     question_type: str = "STAAR"
     question_status: str = "Rejected"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5275,7 +5846,7 @@ def test_staar_type_rejected_status_page_0(get_admin_token):
     question_type: str = "STAAR"
     question_status: str = "Rejected"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5289,7 +5860,7 @@ def test_reported_status_staar_type_page_0(get_admin_token):
     question_type: str = "STAAR"
     question_status: str = "Reported"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5303,7 +5874,7 @@ def test_staar_type_reported_status_page_0(get_admin_token):
     question_type: str = "STAAR"
     question_status: str = "Reported"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5317,7 +5888,7 @@ def test_reported_status__type_page_0(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Reported"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5331,7 +5902,7 @@ def test_college_level_type_reported_status_page_0(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Reported"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5345,7 +5916,7 @@ def test_reported_status_mathworld_type_page_0(get_admin_token):
     question_type: str = "mathworld"
     question_status: str = "Reported"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5359,7 +5930,7 @@ def test_mathworld_type_reported_status_page_0(get_admin_token):
     question_type: str = "Mathworld"
     question_status: str = "Reported"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5373,7 +5944,7 @@ def test_pending_status_ore_response_page_0(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Pending"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5387,7 +5958,7 @@ def test_ore_response_pending_status_page_0(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Pending"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5401,7 +5972,7 @@ def test_approved_status_ore_response_page_0(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Approved"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5415,7 +5986,7 @@ def test_ore_response_approved_status_page_0(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Approved"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5429,7 +6000,7 @@ def test_rejected_status_ore_response_page_0(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Rejected"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5443,7 +6014,7 @@ def test_ore_response_rejected_status_page_0(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Rejected"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5457,7 +6028,7 @@ def test_reported_status_ore_response_page_0(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Reported"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5471,7 +6042,7 @@ def test_ore_response_reported_status_page_0(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Reported"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5485,7 +6056,7 @@ def test_pending_status_ror_response_page_0(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Reported"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5499,7 +6070,7 @@ def test_ror_response_pending_status_page_0(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Pending"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5513,7 +6084,7 @@ def test_pending_status_mc_response_page_0(get_admin_token):
     response_type: str = "Multiple Choice"
     question_status: str = "Reported"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5527,7 +6098,7 @@ def test_mc_response_pending_status_page_0(get_admin_token):
     response_type: str = "Multiple Choice"
     question_status: str = "Pending"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5541,7 +6112,7 @@ def test_pending_status_cb_response_page_0(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Reported"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5555,7 +6126,7 @@ def test_cb_response_pending_status_page_0(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Pending"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5570,7 +6141,7 @@ def test_approved_status_ror_response_page_0(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Approved"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5584,7 +6155,7 @@ def test_ror_response_approved_status_page_0(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Approved"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5598,7 +6169,7 @@ def test_approved_status_mc_response_page_0(get_admin_token):
     response_type: str = "Multiple Choice"
     question_status: str = "Approved"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5612,7 +6183,7 @@ def test_mc_response_approved_status_page_0(get_admin_token):
     response_type: str = "Multiple Choice"
     question_status: str = "Approved"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5626,7 +6197,7 @@ def test_rejected_status_ror_response_page_0(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Rejected"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5640,7 +6211,7 @@ def test_ror_response_rejected_status_page_0(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Rejected"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5654,7 +6225,7 @@ def test_reported_status_ror_response_page_0(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Reported"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5668,7 +6239,7 @@ def test_ror_response_reported_status_page_0(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Reported"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5682,7 +6253,7 @@ def test_rejected_status_mc_response_page_0(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Rejected"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5696,7 +6267,7 @@ def test_mc_response_rejected_status_page_0(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Rejected"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5710,7 +6281,7 @@ def test_reported_status_mc_response_page_0(get_admin_token):
     response_type: str = "Multiple Choice"
     question_status: str = "Reported"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5724,7 +6295,7 @@ def test_mc_response_reported_status_page_0(get_admin_token):
     response_type: str = "Multiple Choice"
     question_status: str = "Reported"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5738,7 +6309,7 @@ def test_rejected_status_cb_response_page_0(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Rejected"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5752,7 +6323,7 @@ def test_cb_response_rejected_status_page_0(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Rejected"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5766,7 +6337,7 @@ def test_cb_response_reported_status_page_0(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Reported"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5780,7 +6351,7 @@ def test_reported_status_cb_response_page_0(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Reported"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5795,7 +6366,7 @@ def test_pending_status_staar_type_ore_response_page_0(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Open Response Exact"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5810,7 +6381,7 @@ def test_approved_status_staar_type_ore_response_page_0(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Open Response Exact"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5825,7 +6396,7 @@ def test_rejected_status_staar_type_ore_response_page_0(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Open Response Exact"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5840,7 +6411,7 @@ def test_reported_status_staar_type_ore_response_page_0(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Open Response Exact"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5855,7 +6426,7 @@ def test_pending_status_college_type_ore_response_page_0(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Open Response Exact"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5870,7 +6441,7 @@ def test_approved_status_college_type_ore_response_page_0(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Open Response Exact"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5885,7 +6456,7 @@ def test_rejected_status_college_type_ore_response_page_0(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Open Response Exact"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5900,7 +6471,7 @@ def test_reported_status_college_type_ore_response_page_0(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Open Response Exact"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5915,7 +6486,7 @@ def test_pending_status_mathworld_type_ore_response_page_0(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Open Response Exact"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5930,7 +6501,7 @@ def test_approved_status_mathworld_type_ore_response_page_0(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Open Response Exact"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5945,7 +6516,7 @@ def test_rejected_status_mathworld_type_ore_response_page_0(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Open Response Exact"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5960,7 +6531,7 @@ def test_reported_status_mathworld_type_ore_response_page_0(get_admin_token):
     question_type: str = "Mathworld"
     page_num: int = 0
     response_type: str = "Open Response Exact"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5975,7 +6546,7 @@ def test_pending_status_college_type_ror_response_page_0(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Range Open Response"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -5990,7 +6561,7 @@ def test_approved_status_college_type_ror_response_page_0(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Range Open Response"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -6005,7 +6576,7 @@ def test_rejected_status_college_type_ror_response_page_0(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Range Open Response"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -6020,7 +6591,7 @@ def test_reported_status_college_type_ror_response_page_0(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Range Open Response"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -6035,7 +6606,7 @@ def test_pending_status_mathworld_type_ror_response_page_0(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Range Open Response"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -6050,7 +6621,7 @@ def test_approved_status_mathworld_type_ror_response_page_0(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Range Open Response"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -6065,7 +6636,7 @@ def test_rejected_status_mathworld_type_ror_response_page_0(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Range Open Response"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -6080,7 +6651,7 @@ def test_reported_status_mathworld_type_ror_response_page_0(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Range Open Response"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -6095,7 +6666,7 @@ def test_pending_status_staar_type_mc_response_page_0(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Multiple Choice"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -6110,7 +6681,7 @@ def test_approved_status_staar_type_mc_response_page_0(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Multiple Choice"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -6125,7 +6696,7 @@ def test_rejected_status_staar_type_mc_response_page_0(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Multiple Choice"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -6140,7 +6711,7 @@ def test_reported_status_staar_type_mc_response_page_0(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Multiple Choice"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -6155,7 +6726,7 @@ def test_pending_status_college_type_mc_response_page_0(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Multiple Choice"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -6170,7 +6741,7 @@ def test_approved_status_college_type_mc_response_page_0(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Multiple Choice"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -6185,7 +6756,7 @@ def test_rejected_status_college_type_mc_response_page_0(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Multiple Choice"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -6200,7 +6771,7 @@ def test_reported_status_college_type_mc_response_page_0(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Multiple Choice"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -6215,7 +6786,7 @@ def test_pending_status_mathworld_type_mc_response_page_0(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Multiple Choice"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -6230,7 +6801,7 @@ def test_approved_status_mathworld_type_mc_response_page_0(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Multiple Choice"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -6245,7 +6816,7 @@ def test_rejected_status_mathworld_type_mc_response_page_0(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Multiple Choice"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -6260,7 +6831,7 @@ def test_reported_status_mathworld_type_mc_response_page_0(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Multiple Choice"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -6275,7 +6846,7 @@ def test_pending_status_staar_type_cb_response_page_0(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Checkbox"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -6290,7 +6861,7 @@ def test_approved_status_staar_type_cb_response_page_0(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Checkbox"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -6305,7 +6876,7 @@ def test_rejected_status_staar_type_cb_response_page_0(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Checkbox"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -6320,7 +6891,7 @@ def test_reported_status_staar_type_cb_response_page_0(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Checkbox"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -6335,7 +6906,7 @@ def test_pending_status_college_type_cb_response_page_0(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Checkbox"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -6350,7 +6921,7 @@ def test_approved_status_college_type_cb_response_page_0(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Checkbox"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -6365,7 +6936,7 @@ def test_rejected_status_college_type_cb_response_page_0(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Checkbox"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -6380,7 +6951,7 @@ def test_reported_status_college_type_cb_response_page_0(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Checkbox"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -6395,7 +6966,7 @@ def test_pending_status_mathworld_type_cb_response_page_0(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Checkbox"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -6410,7 +6981,7 @@ def test_approved_status_mathworld_type_cb_response_page_0(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Checkbox"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -6425,7 +6996,7 @@ def test_rejected_status_mathworld_type_cb_response_page_0(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Checkbox"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -6440,7 +7011,7 @@ def test_reported_status_mathworld_type_cb_response_page_0(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Checkbox"
     page_num: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -6456,11 +7027,14 @@ def test_pending_questions_page_empty(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_status: str = "Pending"
     page_num = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_400
@@ -6469,11 +7043,14 @@ def test_approved_questions_page_empty(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_status: str = "Approved"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_401
@@ -6482,11 +7059,14 @@ def test_rejected_questions_page_empty(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_status: str = "Rejected"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_402
@@ -6495,11 +7075,14 @@ def test_reported_questions_page_empty(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_status: str = "Reported"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_403
@@ -6509,11 +7092,14 @@ def test_staar_type_pending_status_page_empty(get_admin_token):
     question_type: str = "STAAR"
     question_status: str = "Pending"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_404
@@ -6523,11 +7109,14 @@ def test_pending_status_staar_type_page_empty(get_admin_token):
     question_type: str = "STAAR"
     question_status: str = "Pending"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_405
@@ -6537,11 +7126,14 @@ def test_college_level_type_pending_status_page_empty(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Pending"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_406
@@ -6551,11 +7143,14 @@ def test_pending_status_college_level_type_page_empty(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Pending"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_407
@@ -6565,11 +7160,14 @@ def test_pending_status_mathworld_type_page_empty(get_admin_token):
     question_type: str = "Mathworld"
     question_status: str = "Pending"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_408
@@ -6579,11 +7177,14 @@ def test_mathworld_type_pending_status_page_empty(get_admin_token):
     question_type: str = "Mathworld"
     question_status: str = "Pending"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&page_num={page_num}&question_type={question_type}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&page_num={page_num}&question_type={question_type}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_409
@@ -6593,11 +7194,14 @@ def test_approved_status_college_level_type_page_empty(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Approved"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&page_num={page_num}&question_status={question_status}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&page_num={page_num}&question_status={question_status}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_410
@@ -6607,11 +7211,14 @@ def test_college_level_type_approved_status_page_empty(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Approved"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_411
@@ -6621,11 +7228,14 @@ def test_approved_status_mathworld_type_page_empty(get_admin_token):
     question_type: str = "Mathworld"
     question_status: str = "Approved"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_412
@@ -6635,11 +7245,14 @@ def test_mathworld_type_approved_status_page_empty(get_admin_token):
     question_type: str = "Mathworld"
     question_status: str = "Approved"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_413
@@ -6649,11 +7262,14 @@ def test_rejected_status_mathworld_type_page_empty(get_admin_token):
     question_type: str = "Mathworld"
     question_status: str = "Rejected"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_414
@@ -6663,11 +7279,14 @@ def test_mathworld_type_rejected_status_page_empty(get_admin_token):
     question_type: str = "Mathworld"
     question_status: str = "Rejected"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_415
@@ -6677,11 +7296,14 @@ def test_rejected_status_college_level_type_page_empty(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Rejected"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_416
@@ -6691,11 +7313,14 @@ def test_college_level_type_rejected_status_page_empty(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Rejected"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_417
@@ -6705,11 +7330,14 @@ def test_rejected_status_staar_type_page_empty(get_admin_token):
     question_type: str = "STAAR"
     question_status: str = "Rejected"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_418
@@ -6719,11 +7347,14 @@ def test_staar_type_rejected_status_page_empty(get_admin_token):
     question_type: str = "STAAR"
     question_status: str = "Rejected"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_419
@@ -6733,11 +7364,14 @@ def test_reported_status_staar_type_page_empty(get_admin_token):
     question_type: str = "STAAR"
     question_status: str = "Reported"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_420
@@ -6747,11 +7381,14 @@ def test_staar_type_reported_status_page_empty(get_admin_token):
     question_type: str = "STAAR"
     question_status: str = "Reported"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_421
@@ -6761,11 +7398,14 @@ def test_reported_status__type_page_empty(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Reported"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_422
@@ -6775,11 +7415,14 @@ def test_college_level_type_reported_status_page_empty(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Reported"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_423
@@ -6789,11 +7432,14 @@ def test_reported_status_mathworld_type_page_empty(get_admin_token):
     question_type: str = "mathworld"
     question_status: str = "Reported"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_424
@@ -6803,11 +7449,14 @@ def test_mathworld_type_reported_status_page_empty(get_admin_token):
     question_type: str = "Mathworld"
     question_status: str = "Reported"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_425
@@ -6817,11 +7466,14 @@ def test_pending_status_ore_response_page_empty(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Pending"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_426
@@ -6831,11 +7483,14 @@ def test_ore_response_pending_status_page_empty(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Pending"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_427
@@ -6845,11 +7500,14 @@ def test_approved_status_ore_response_page_empty(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Approved"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_428
@@ -6859,11 +7517,14 @@ def test_ore_response_approved_status_page_empty(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Approved"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_429
@@ -6873,11 +7534,14 @@ def test_rejected_status_ore_response_page_empty(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Rejected"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_430
@@ -6887,11 +7551,14 @@ def test_ore_response_rejected_status_page_empty(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Rejected"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_431
@@ -6901,11 +7568,14 @@ def test_reported_status_ore_response_page_empty(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Reported"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_432
@@ -6915,11 +7585,14 @@ def test_ore_response_reported_status_page_empty(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Reported"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_433
@@ -6929,11 +7602,14 @@ def test_pending_status_ror_response_page_empty(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Reported"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_434
@@ -6943,11 +7619,14 @@ def test_ror_response_pending_status_page_empty(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Pending"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_435
@@ -6957,11 +7636,14 @@ def test_pending_status_mc_response_page_empty(get_admin_token):
     response_type: str = "Multiple Choice"
     question_status: str = "Reported"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_436
@@ -6971,11 +7653,14 @@ def test_mc_response_pending_status_page_empty(get_admin_token):
     response_type: str = "Multiple Choice"
     question_status: str = "Pending"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_437
@@ -6985,11 +7670,14 @@ def test_pending_status_cb_response_page_empty(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Reported"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_438
@@ -6999,11 +7687,14 @@ def test_cb_response_pending_status_page_empty(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Pending"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 # --------
@@ -7014,11 +7705,14 @@ def test_approved_status_ror_response_page_empty(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Approved"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_440
@@ -7028,11 +7722,14 @@ def test_ror_response_approved_status_page_empty(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Approved"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_441
@@ -7042,11 +7739,14 @@ def test_approved_status_mc_response_page_empty(get_admin_token):
     response_type: str = "Multiple Choice"
     question_status: str = "Approved"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_442
@@ -7056,11 +7756,14 @@ def test_mc_response_approved_status_page_empty(get_admin_token):
     response_type: str = "Multiple Choice"
     question_status: str = "Approved"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_443
@@ -7070,11 +7773,14 @@ def test_rejected_status_ror_response_page_empty(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Rejected"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_444
@@ -7084,11 +7790,14 @@ def test_ror_response_rejected_status_page_empty(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Rejected"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_445
@@ -7098,11 +7807,14 @@ def test_reported_status_ror_response_page_empty(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Reported"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_446
@@ -7112,11 +7824,14 @@ def test_ror_response_reported_status_page_empty(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Reported"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_447
@@ -7126,11 +7841,14 @@ def test_rejected_status_mc_response_page_empty(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Rejected"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_448
@@ -7140,11 +7858,14 @@ def test_mc_response_rejected_status_page_empty(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Rejected"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_449
@@ -7154,11 +7875,14 @@ def test_reported_status_mc_response_page_empty(get_admin_token):
     response_type: str = "Multiple Choice"
     question_status: str = "Reported"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_450
@@ -7168,11 +7892,14 @@ def test_mc_response_reported_status_page_empty(get_admin_token):
     response_type: str = "Multiple Choice"
     question_status: str = "Reported"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_451
@@ -7182,11 +7909,14 @@ def test_rejected_status_cb_response_page_empty(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Rejected"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_452
@@ -7196,11 +7926,14 @@ def test_cb_response_rejected_status_page_empty(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Rejected"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_453
@@ -7210,11 +7943,14 @@ def test_cb_response_reported_status_page_empty(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Reported"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_454
@@ -7224,11 +7960,14 @@ def test_reported_status_cb_response_page_empty(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Reported"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_455
@@ -7239,11 +7978,14 @@ def test_pending_status_staar_type_ore_response_page_empty(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Open Response Exact"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_456
@@ -7254,11 +7996,14 @@ def test_approved_status_staar_type_ore_response_page_empty(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Open Response Exact"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_457
@@ -7269,11 +8014,14 @@ def test_rejected_status_staar_type_ore_response_page_empty(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Open Response Exact"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_458
@@ -7284,11 +8032,14 @@ def test_reported_status_staar_type_ore_response_page_empty(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Open Response Exact"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_459
@@ -7299,11 +8050,14 @@ def test_pending_status_college_type_ore_response_page_empty(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Open Response Exact"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_460
@@ -7314,11 +8068,14 @@ def test_approved_status_college_type_ore_response_page_empty(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Open Response Exact"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_461
@@ -7329,11 +8086,14 @@ def test_rejected_status_college_type_ore_response_page_empty(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Open Response Exact"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_462
@@ -7344,11 +8104,14 @@ def test_reported_status_college_type_ore_response_page_empty(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Open Response Exact"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_463
@@ -7359,11 +8122,14 @@ def test_pending_status_mathworld_type_ore_response_page_empty(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Open Response Exact"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_464
@@ -7374,11 +8140,14 @@ def test_approved_status_mathworld_type_ore_response_page_empty(get_admin_token)
     question_type: str = "Mathworld"
     response_type: str = "Open Response Exact"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_465
@@ -7389,11 +8158,14 @@ def test_rejected_status_mathworld_type_ore_response_page_empty(get_admin_token)
     question_type: str = "Mathworld"
     response_type: str = "Open Response Exact"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_466
@@ -7404,11 +8176,14 @@ def test_reported_status_mathworld_type_ore_response_page_empty(get_admin_token)
     question_type: str = "Mathworld"
     page_num: str = ""
     response_type: str = "Open Response Exact"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_467
@@ -7419,11 +8194,14 @@ def test_pending_status_college_type_ror_response_page_empty(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Range Open Response"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_468
@@ -7434,11 +8212,14 @@ def test_approved_status_college_type_ror_response_page_empty(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Range Open Response"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_469
@@ -7449,11 +8230,14 @@ def test_rejected_status_college_type_ror_response_page_empty(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Range Open Response"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_470
@@ -7464,11 +8248,14 @@ def test_reported_status_college_type_ror_response_page_empty(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Range Open Response"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_471
@@ -7479,11 +8266,14 @@ def test_pending_status_mathworld_type_ror_response_page_empty(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Range Open Response"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_472
@@ -7494,11 +8284,14 @@ def test_approved_status_mathworld_type_ror_response_page_empty(get_admin_token)
     question_type: str = "Mathworld"
     response_type: str = "Range Open Response"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_473
@@ -7509,11 +8302,14 @@ def test_rejected_status_mathworld_type_ror_response_page_empty(get_admin_token)
     question_type: str = "Mathworld"
     response_type: str = "Range Open Response"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_474
@@ -7524,11 +8320,14 @@ def test_reported_status_mathworld_type_ror_response_page_empty(get_admin_token)
     question_type: str = "Mathworld"
     response_type: str = "Range Open Response"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_475
@@ -7539,11 +8338,14 @@ def test_pending_status_staar_type_mc_response_page_empty(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Multiple Choice"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_476
@@ -7554,11 +8356,14 @@ def test_approved_status_staar_type_mc_response_page_empty(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Multiple Choice"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_477
@@ -7569,11 +8374,14 @@ def test_rejected_status_staar_type_mc_response_page_empty(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Multiple Choice"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_478
@@ -7584,11 +8392,14 @@ def test_reported_status_staar_type_mc_response_page_empty(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Multiple Choice"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_479
@@ -7599,11 +8410,14 @@ def test_pending_status_college_type_mc_response_page_empty(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Multiple Choice"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_480
@@ -7614,11 +8428,14 @@ def test_approved_status_college_type_mc_response_page_empty(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Multiple Choice"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_481
@@ -7629,11 +8446,14 @@ def test_rejected_status_college_type_mc_response_page_empty(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Multiple Choice"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_482
@@ -7644,11 +8464,14 @@ def test_reported_status_college_type_mc_response_page_empty(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Multiple Choice"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_483
@@ -7659,11 +8482,14 @@ def test_pending_status_mathworld_type_mc_response_page_empty(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Multiple Choice"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_484
@@ -7674,11 +8500,14 @@ def test_approved_status_mathworld_type_mc_response_page_empty(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Multiple Choice"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_485
@@ -7689,11 +8518,14 @@ def test_rejected_status_mathworld_type_mc_response_page_empty(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Multiple Choice"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_486
@@ -7704,11 +8536,14 @@ def test_reported_status_mathworld_type_mc_response_page_empty(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Multiple Choice"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_487
@@ -7719,11 +8554,14 @@ def test_pending_status_staar_type_cb_response_page_empty(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Checkbox"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_488
@@ -7734,11 +8572,14 @@ def test_approved_status_staar_type_cb_response_page_empty(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Checkbox"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_489
@@ -7749,11 +8590,14 @@ def test_rejected_status_staar_type_cb_response_page_empty(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Checkbox"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_490
@@ -7764,11 +8608,14 @@ def test_reported_status_mathworld_type_cb_response_page_empty(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Checkbox"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_491
@@ -7779,11 +8626,14 @@ def test_pending_status_college_type_cb_response_page_empty(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Checkbox"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_492
@@ -7794,11 +8644,14 @@ def test_approved_status_college_type_cb_response_page_empty(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Checkbox"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_493
@@ -7809,11 +8662,14 @@ def test_rejected_status_college_type_cb_response_page_empty(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Checkbox"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_494
@@ -7824,11 +8680,14 @@ def test_reported_status_college_type_cb_response_page_empty(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Checkbox"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_495
@@ -7839,11 +8698,14 @@ def test_pending_status_mathworld_type_cb_response_page_empty(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Checkbox"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_496
@@ -7854,11 +8716,14 @@ def test_approved_status_mathworld_type_cb_response_page_empty(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Checkbox"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_497
@@ -7869,11 +8734,14 @@ def test_rejected_status_mathworld_type_cb_response_page_empty(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Checkbox"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 @pytest.mark.tc_498
@@ -7884,11 +8752,14 @@ def test_reported_status_mathworld_type_cb_response_page_empyt(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Checkbox"
     page_num: str = ""
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 422
     questions: dict = json.loads(response.text)
-    assert questions["detail"][0]["msg"] == "value is not a valid integer"
+    assert (
+        questions["detail"][0]["msg"]
+        == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 # ------------------------------ page_num = negative ---------------------------------
@@ -7900,7 +8771,7 @@ def test_pending_questions_page_negative(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_status: str = "Pending"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -7913,7 +8784,7 @@ def test_approved_questions_page_negative(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_status: str = "Approved"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -7926,7 +8797,7 @@ def test_rejected_questions_page_negative(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_status: str = "Rejected"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -7939,7 +8810,7 @@ def test_reported_questions_page_negative(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_status: str = "Reported"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -7953,7 +8824,7 @@ def test_staar_type_pending_status_page_negative(get_admin_token):
     question_type: str = "STAAR"
     question_status: str = "Pending"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -7967,7 +8838,7 @@ def test_pending_status_staar_type_page_negative(get_admin_token):
     question_type: str = "STAAR"
     question_status: str = "Pending"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -7981,7 +8852,7 @@ def test_college_level_type_pending_status_page_negative(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Pending"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -7995,7 +8866,7 @@ def test_pending_status_college_level_type_page_negative(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Pending"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8009,7 +8880,7 @@ def test_pending_status_mathworld_type_page_negative(get_admin_token):
     question_type: str = "Mathworld"
     question_status: str = "Pending"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8023,7 +8894,7 @@ def test_mathworld_type_pending_status_page_negative(get_admin_token):
     question_type: str = "Mathworld"
     question_status: str = "Pending"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&page_num={page_num}&question_type={question_type}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&page_num={page_num}&question_type={question_type}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8037,7 +8908,7 @@ def test_approved_status_college_level_type_page_negative(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Approved"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&page_num={page_num}&question_status={question_status}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&page_num={page_num}&question_status={question_status}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8051,7 +8922,7 @@ def test_college_level_type_approved_status_page_negative(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Approved"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     time.sleep(1)
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
@@ -8066,7 +8937,7 @@ def test_approved_status_mathworld_type_page_negative(get_admin_token):
     question_type: str = "Mathworld"
     question_status: str = "Approved"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8080,7 +8951,7 @@ def test_mathworld_type_approved_status_page_negative(get_admin_token):
     question_type: str = "Mathworld"
     question_status: str = "Approved"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8094,7 +8965,7 @@ def test_rejected_status_mathworld_type_page_negative(get_admin_token):
     question_type: str = "Mathworld"
     question_status: str = "Rejected"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8108,7 +8979,7 @@ def test_mathworld_type_rejected_status_page_negative(get_admin_token):
     question_type: str = "Mathworld"
     question_status: str = "Rejected"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8122,7 +8993,7 @@ def test_rejected_status_college_level_type_page_negative(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Rejected"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8136,7 +9007,7 @@ def test_college_level_type_rejected_status_page_negative(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Rejected"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8150,7 +9021,7 @@ def test_rejected_status_staar_type_page_negative(get_admin_token):
     question_type: str = "STAAR"
     question_status: str = "Rejected"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8164,7 +9035,7 @@ def test_staar_type_rejected_status_page_negative(get_admin_token):
     question_type: str = "STAAR"
     question_status: str = "Rejected"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8178,7 +9049,7 @@ def test_reported_status_staar_type_page_negative(get_admin_token):
     question_type: str = "STAAR"
     question_status: str = "Reported"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8192,7 +9063,7 @@ def test_staar_type_reported_status_page_negative(get_admin_token):
     question_type: str = "STAAR"
     question_status: str = "Reported"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8206,7 +9077,7 @@ def test_reported_status__type_page_negative(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Reported"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8220,7 +9091,7 @@ def test_college_level_type_reported_status_page_negative(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Reported"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8234,7 +9105,7 @@ def test_reported_status_mathworld_type_page_negative(get_admin_token):
     question_type: str = "mathworld"
     question_status: str = "Reported"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8248,7 +9119,7 @@ def test_mathworld_type_reported_status_page_negative(get_admin_token):
     question_type: str = "Mathworld"
     question_status: str = "Reported"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8262,7 +9133,7 @@ def test_pending_status_ore_response_page_negative(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Pending"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8276,7 +9147,7 @@ def test_ore_response_pending_status_page_negative(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Pending"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8290,7 +9161,7 @@ def test_approved_status_ore_response_page_negative(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Approved"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8304,7 +9175,7 @@ def test_ore_response_approved_status_page_negative(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Approved"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8318,7 +9189,7 @@ def test_rejected_status_ore_response_page_negative(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Rejected"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8332,7 +9203,7 @@ def test_ore_response_rejected_status_page_negative(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Rejected"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8346,7 +9217,7 @@ def test_reported_status_ore_response_page_negative(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Reported"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8360,7 +9231,7 @@ def test_ore_response_reported_status_page_negative(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Reported"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8374,7 +9245,7 @@ def test_pending_status_ror_response_page_negative(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Reported"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8388,7 +9259,7 @@ def test_ror_response_pending_status_page_negative(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Pending"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8402,7 +9273,7 @@ def test_pending_status_mc_response_page_negative(get_admin_token):
     response_type: str = "Multiple Choice"
     question_status: str = "Reported"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8416,7 +9287,7 @@ def test_mc_response_pending_status_page_negative(get_admin_token):
     response_type: str = "Multiple Choice"
     question_status: str = "Pending"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8430,7 +9301,7 @@ def test_pending_status_cb_response_page_negative(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Reported"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8444,7 +9315,7 @@ def test_cb_response_pending_status_page_negative(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Pending"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8459,7 +9330,7 @@ def test_approved_status_ror_response_page_negative(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Approved"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8473,7 +9344,7 @@ def test_ror_response_approved_status_page_negative(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Approved"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8487,7 +9358,7 @@ def test_approved_status_mc_response_page_negative(get_admin_token):
     response_type: str = "Multiple Choice"
     question_status: str = "Approved"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8501,7 +9372,7 @@ def test_mc_response_approved_status_page_negative(get_admin_token):
     response_type: str = "Multiple Choice"
     question_status: str = "Approved"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8515,7 +9386,7 @@ def test_rejected_status_ror_response_page_negative(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Rejected"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8529,7 +9400,7 @@ def test_ror_response_rejected_status_page_negative(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Rejected"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8543,7 +9414,7 @@ def test_reported_status_ror_response_page_negative(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Reported"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8557,7 +9428,7 @@ def test_ror_response_reported_status_page_negative(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Reported"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8571,7 +9442,7 @@ def test_rejected_status_mc_response_page_negative(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Rejected"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8585,7 +9456,7 @@ def test_mc_response_rejected_status_page_negative(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Rejected"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8599,7 +9470,7 @@ def test_reported_status_mc_response_page_negative(get_admin_token):
     response_type: str = "Multiple Choice"
     question_status: str = "Reported"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8613,7 +9484,7 @@ def test_mc_response_reported_status_page_negative(get_admin_token):
     response_type: str = "Multiple Choice"
     question_status: str = "Reported"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8627,7 +9498,7 @@ def test_rejected_status_cb_response_page_negative(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Rejected"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8641,7 +9512,7 @@ def test_cb_response_rejected_status_page_negative(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Rejected"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8655,7 +9526,7 @@ def test_cb_response_reported_status_page_negative(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Reported"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8669,7 +9540,7 @@ def test_reported_status_cb_response_page_negative(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Reported"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8684,7 +9555,7 @@ def test_pending_status_staar_type_ore_response_page_negative(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Open Response Exact"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8699,7 +9570,7 @@ def test_approved_status_staar_type_ore_response_page_negative(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Open Response Exact"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8714,7 +9585,7 @@ def test_rejected_status_staar_type_ore_response_page_negative(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Open Response Exact"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8729,7 +9600,7 @@ def test_reported_status_staar_type_ore_response_page_negative(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Open Response Exact"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8744,7 +9615,7 @@ def test_pending_status_college_type_ore_response_page_negative(get_admin_token)
     question_type: str = "College Level"
     response_type: str = "Open Response Exact"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8759,7 +9630,7 @@ def test_approved_status_college_type_ore_response_page_negative(get_admin_token
     question_type: str = "College Level"
     response_type: str = "Open Response Exact"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8774,7 +9645,7 @@ def test_rejected_status_college_type_ore_response_page_negative(get_admin_token
     question_type: str = "College Level"
     response_type: str = "Open Response Exact"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8789,7 +9660,7 @@ def test_reported_status_college_type_ore_response_page_negative(get_admin_token
     question_type: str = "College Level"
     response_type: str = "Open Response Exact"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8804,7 +9675,7 @@ def test_pending_status_mathworld_type_ore_response_page_negative(get_admin_toke
     question_type: str = "Mathworld"
     response_type: str = "Open Response Exact"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8819,7 +9690,7 @@ def test_approved_status_mathworld_type_ore_response_page_negative(get_admin_tok
     question_type: str = "Mathworld"
     response_type: str = "Open Response Exact"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8834,7 +9705,7 @@ def test_rejected_status_mathworld_type_ore_response_page_negative(get_admin_tok
     question_type: str = "Mathworld"
     response_type: str = "Open Response Exact"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8849,7 +9720,7 @@ def test_reported_status_mathworld_type_ore_response_page_negative(get_admin_tok
     question_type: str = "Mathworld"
     page_num: int = -1
     response_type: str = "Open Response Exact"
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8864,7 +9735,7 @@ def test_pending_status_college_type_ror_response_page_negative(get_admin_token)
     question_type: str = "College Level"
     response_type: str = "Range Open Response"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8879,7 +9750,7 @@ def test_approved_status_college_type_ror_response_page_negative(get_admin_token
     question_type: str = "College Level"
     response_type: str = "Range Open Response"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8894,7 +9765,7 @@ def test_rejected_status_college_type_ror_response_page_negative(get_admin_token
     question_type: str = "College Level"
     response_type: str = "Range Open Response"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8909,7 +9780,7 @@ def test_reported_status_college_type_ror_response_page_negative(get_admin_token
     question_type: str = "College Level"
     response_type: str = "Range Open Response"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8924,7 +9795,7 @@ def test_pending_status_mathworld_type_ror_response_page_negative(get_admin_toke
     question_type: str = "Mathworld"
     response_type: str = "Range Open Response"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8939,7 +9810,7 @@ def test_approved_status_mathworld_type_ror_response_page_negative(get_admin_tok
     question_type: str = "Mathworld"
     response_type: str = "Range Open Response"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8954,7 +9825,7 @@ def test_rejected_status_mathworld_type_ror_response_page_negative(get_admin_tok
     question_type: str = "Mathworld"
     response_type: str = "Range Open Response"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8969,7 +9840,7 @@ def test_reported_status_mathworld_type_ror_response_page_negative(get_admin_tok
     question_type: str = "Mathworld"
     response_type: str = "Range Open Response"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8984,7 +9855,7 @@ def test_pending_status_staar_type_mc_response_page_negative(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Multiple Choice"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -8999,7 +9870,7 @@ def test_approved_status_staar_type_mc_response_page_negative(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Multiple Choice"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -9014,7 +9885,7 @@ def test_rejected_status_staar_type_mc_response_page_negative(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Multiple Choice"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -9029,7 +9900,7 @@ def test_reported_status_staar_type_mc_response_page_negative(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Multiple Choice"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -9044,7 +9915,7 @@ def test_pending_status_college_type_mc_response_page_negative(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Multiple Choice"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -9059,7 +9930,7 @@ def test_approved_status_college_type_mc_response_page_negative(get_admin_token)
     question_type: str = "College Level"
     response_type: str = "Multiple Choice"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -9074,7 +9945,7 @@ def test_rejected_status_college_type_mc_response_page_negative(get_admin_token)
     question_type: str = "College Level"
     response_type: str = "Multiple Choice"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -9089,7 +9960,7 @@ def test_reported_status_college_type_mc_response_page_negative(get_admin_token)
     question_type: str = "College Level"
     response_type: str = "Multiple Choice"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -9104,7 +9975,7 @@ def test_pending_status_mathworld_type_mc_response_page_negative(get_admin_token
     question_type: str = "Mathworld"
     response_type: str = "Multiple Choice"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -9119,7 +9990,7 @@ def test_approved_status_mathworld_type_mc_response_page_negative(get_admin_toke
     question_type: str = "Mathworld"
     response_type: str = "Multiple Choice"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -9134,7 +10005,7 @@ def test_rejected_status_mathworld_type_mc_response_page_negative(get_admin_toke
     question_type: str = "Mathworld"
     response_type: str = "Multiple Choice"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -9149,7 +10020,7 @@ def test_reported_status_mathworld_type_mc_response_page_negative(get_admin_toke
     question_type: str = "Mathworld"
     response_type: str = "Multiple Choice"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -9164,7 +10035,7 @@ def test_pending_status_staar_type_cb_response_page_negative(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Checkbox"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -9179,7 +10050,7 @@ def test_approved_status_staar_type_cb_response_page_negative(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Checkbox"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -9194,7 +10065,7 @@ def test_rejected_status_staar_type_cb_response_page_negative(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Checkbox"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -9209,7 +10080,7 @@ def test_reported_status_staar_type_cb_response_page_negative(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Checkbox"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -9224,7 +10095,7 @@ def test_pending_status_college_type_cb_response_page_negative(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Checkbox"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -9239,7 +10110,7 @@ def test_approved_status_college_type_cb_response_page_negative(get_admin_token)
     question_type: str = "College Level"
     response_type: str = "Checkbox"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -9254,7 +10125,7 @@ def test_rejected_status_college_type_cb_response_page_negative(get_admin_token)
     question_type: str = "College Level"
     response_type: str = "Checkbox"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -9269,7 +10140,7 @@ def test_reported_status_college_type_cb_response_page_negative(get_admin_token)
     question_type: str = "College Level"
     response_type: str = "Checkbox"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -9284,7 +10155,7 @@ def test_pending_status_mathworld_type_cb_response_page_negative(get_admin_token
     question_type: str = "Mathworld"
     response_type: str = "Checkbox"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -9299,7 +10170,7 @@ def test_approved_status_mathworld_type_cb_response_page_negative(get_admin_toke
     question_type: str = "Mathworld"
     response_type: str = "Checkbox"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -9314,7 +10185,7 @@ def test_rejected_status_mathworld_type_cb_response_page_negative(get_admin_toke
     question_type: str = "Mathworld"
     response_type: str = "Checkbox"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -9329,7 +10200,7 @@ def test_reported_status_mathworld_type_cb_response_page_negative(get_admin_toke
     question_type: str = "Mathworld"
     response_type: str = "Checkbox"
     page_num: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -9345,7 +10216,7 @@ def test_pending_question_size_1(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_status: str = "Pending"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9358,7 +10229,7 @@ def test_approved_questions_size_1(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_status: str = "Approved"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9371,7 +10242,7 @@ def test_rejected_question_size_1(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_status: str = "Rejected"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9384,7 +10255,7 @@ def test_reported_questions_size_1(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_status: str = "Reported"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9398,7 +10269,7 @@ def test_staar_type_pending_status_size_1(get_admin_token):
     question_type: str = "STAAR"
     question_status: str = "Pending"
     page_size = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_size=1"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_size=1"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9412,7 +10283,7 @@ def test_pending_status_staar_type_size_1(get_admin_token):
     question_type: str = "STAAR"
     question_status: str = "Pending"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_size=1"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_size=1"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9426,7 +10297,7 @@ def test_college_level_type_pending_status_size_1(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Pending"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9440,7 +10311,7 @@ def test_pending_status_college_level_type_size_1(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Pending"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9454,7 +10325,7 @@ def test_pending_status_mathworld_type_size_1(get_admin_token):
     question_type: str = "Mathworld"
     question_status: str = "Pending"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_size=1"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_size=1"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9468,7 +10339,7 @@ def test_mathworld_type_pending_status_size_1(get_admin_token):
     question_type: str = "Mathworld"
     question_status: str = "Pending"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_size=1"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_size=1"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9482,7 +10353,7 @@ def test_approved_status_college_level_type_size_1(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Approved"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9496,7 +10367,7 @@ def test_college_level_type_approved_status_size_1(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Approved"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9510,7 +10381,7 @@ def test_approved_status_mathworld_type_size_1(get_admin_token):
     question_type: str = "Mathworld"
     question_status: str = "Approved"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9524,7 +10395,7 @@ def test_mathworld_type_approved_status_size_1(get_admin_token):
     question_type: str = "Mathworld"
     question_status: str = "Approved"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9538,7 +10409,7 @@ def test_rejected_status_mathworld_type_size_1(get_admin_token):
     question_type: str = "Mathworld"
     question_status: str = "Rejected"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9552,7 +10423,7 @@ def test_mathworld_type_rejected_status_size_1(get_admin_token):
     question_type: str = "Mathworld"
     question_status: str = "Rejected"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9566,7 +10437,7 @@ def test_rejected_status_college_level_type_size_1(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Rejected"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9580,7 +10451,7 @@ def test_college_level_type_rejected_status_size_1(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Rejected"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9594,7 +10465,7 @@ def test_rejected_status_staar_type_size_1(get_admin_token):
     question_type: str = "STAAR"
     question_status: str = "Rejected"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9608,7 +10479,7 @@ def test_staar_type_rejected_status_size_1(get_admin_token):
     question_type: str = "STAAR"
     question_status: str = "Rejected"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9622,7 +10493,7 @@ def test_reported_status_staar_type_size_1(get_admin_token):
     question_type: str = "STAAR"
     question_status: str = "Reported"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9636,7 +10507,7 @@ def test_staar_type_reported_status_size_1(get_admin_token):
     question_type: str = "STAAR"
     question_status: str = "Reported"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9650,7 +10521,7 @@ def test_reported_status__type_size_1(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Reported"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9664,7 +10535,7 @@ def test_college_level_type_reported_status_size_1(get_admin_token):
     question_type: str = "College Level"
     question_status: str = "Reported"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9680,9 +10551,9 @@ def test_reported_status_mathworld_type_size_1(get_admin_token):
     page_size: int = 1
     create_response: dict = common.create_a_mathworld_question("admin")
     update_response = common.update_question_status(
-        create_response["question_uuid"], question_status
+        create_response["question_id"], question_status
     )
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9700,9 +10571,9 @@ def test_mathworld_type_reported_status_size_1(get_admin_token):
     create_response: dict = common.create_a_mathworld_question("admin")
     time.sleep(1)
     update_response = common.update_question_status(
-        create_response["question_uuid"], question_status
+        create_response["question_id"], question_status
     )
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9716,7 +10587,7 @@ def test_ore_response_pending_status_size_1(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Pending"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9730,7 +10601,7 @@ def test_approved_status_ore_response_size_1(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Approved"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9744,7 +10615,7 @@ def test_ore_response_approved_status_size_1(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Approved"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9758,7 +10629,7 @@ def test_rejected_status_ore_response_size_1(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Rejected"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9772,7 +10643,7 @@ def test_ore_response_rejected_status_size_1(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Rejected"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9786,7 +10657,7 @@ def test_reported_status_ore_response_size_1(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Reported"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9800,7 +10671,7 @@ def test_ore_response_reported_status_size_1(get_admin_token):
     response_type: str = "Open Response Exact"
     question_status: str = "Reported"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9814,7 +10685,7 @@ def test_pending_status_ror_response_size_1(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Reported"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9828,7 +10699,7 @@ def test_ror_response_pending_status_size_1(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Pending"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9842,7 +10713,7 @@ def test_pending_status_mc_response_size_1(get_admin_token):
     response_type: str = "Multiple Choice"
     question_status: str = "Reported"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9856,7 +10727,7 @@ def test_mc_response_pending_status_size_1(get_admin_token):
     response_type: str = "Multiple Choice"
     question_status: str = "Pending"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9870,7 +10741,7 @@ def test_pending_status_cb_response_size_1(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Reported"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9884,7 +10755,7 @@ def test_cb_response_pending_status_size_1(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Pending"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9898,8 +10769,25 @@ def test_approved_status_ror_response_size_1(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     response_type: str = "Range Open Response"
     question_status: str = "Approved"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9912,8 +10800,25 @@ def test_ror_response_approved_status_size_1(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     response_type: str = "Range Open Response"
     question_status: str = "Approved"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9927,7 +10832,7 @@ def test_approved_status_mc_response_size_1(get_admin_token):
     response_type: str = "Multiple Choice"
     question_status: str = "Approved"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9941,7 +10846,7 @@ def test_mc_response_approved_status_size_1(get_admin_token):
     response_type: str = "Multiple Choice"
     question_status: str = "Approved"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9955,7 +10860,7 @@ def test_rejected_status_ror_response_size_1(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Rejected"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9969,7 +10874,7 @@ def test_ror_response_rejected_status_size_1(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Rejected"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9983,7 +10888,7 @@ def test_reported_status_ror_response_size_1(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Reported"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -9997,7 +10902,7 @@ def test_ror_response_reported_status_size_1(get_admin_token):
     response_type: str = "Range Open Response"
     question_status: str = "Reported"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10011,7 +10916,7 @@ def test_rejected_status_mc_response_size_1(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Rejected"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10025,7 +10930,7 @@ def test_mc_response_rejected_status_size_1(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Rejected"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10039,7 +10944,7 @@ def test_reported_status_mc_response_size_1(get_admin_token):
     response_type: str = "Multiple Choice"
     question_status: str = "Reported"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10053,7 +10958,7 @@ def test_mc_response_reported_status_size_1(get_admin_token):
     response_type: str = "Multiple Choice"
     question_status: str = "Reported"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10067,7 +10972,7 @@ def test_rejected_status_cb_response_size_1(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Rejected"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10081,7 +10986,7 @@ def test_cb_response_rejected_status_size_1(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Rejected"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10095,7 +11000,7 @@ def test_cb_response_reported_status_size_1(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Reported"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10109,7 +11014,7 @@ def test_reported_status_cb_response_size_1(get_admin_token):
     response_type: str = "Checkbox"
     question_status: str = "Reported"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&response_type={response_type}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&response_type={response_type}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10124,7 +11029,7 @@ def test_pending_status_staar_type_ore_response_size_1(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Open Response Exact"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10139,7 +11044,7 @@ def test_approved_status_staar_type_ore_response_size_1(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Open Response Exact"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10154,7 +11059,7 @@ def test_rejected_status_staar_type_ore_response_size_1(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Open Response Exact"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10169,7 +11074,7 @@ def test_reported_status_staar_type_ore_response_size_1(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Open Response Exact"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10184,7 +11089,7 @@ def test_pending_status_college_type_ore_response_size_1(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Open Response Exact"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10199,7 +11104,7 @@ def test_approved_status_college_type_ore_response_size_1(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Open Response Exact"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10214,7 +11119,7 @@ def test_rejected_status_college_type_ore_response_size_1(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Open Response Exact"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10229,7 +11134,7 @@ def test_reported_status_college_type_ore_response_size_1(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Open Response Exact"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10244,7 +11149,7 @@ def test_pending_status_mathworld_type_ore_response_size_1(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Open Response Exact"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10259,7 +11164,7 @@ def test_approved_status_mathworld_type_ore_response_size_1(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Open Response Exact"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10274,7 +11179,7 @@ def test_rejected_status_mathworld_type_ore_response_size_1(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Open Response Exact"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10291,7 +11196,7 @@ def test_reported_status_mathworld_type_ore_response_size_1(get_admin_token):
     common.create_a_mathworld_question("admin", response_type)
     common.update_question_status("admin", question_status)
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10306,7 +11211,7 @@ def test_pending_status_college_type_ror_response_size_1(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Range Open Response"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10320,8 +11225,25 @@ def test_approved_status_college_type_ror_response_size_1(get_admin_token):
     question_status: str = "Approved"
     question_type: str = "College Level"
     response_type: str = "Range Open Response"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10335,8 +11257,25 @@ def test_rejected_status_college_type_ror_response_size_1(get_admin_token):
     question_status: str = "Rejected"
     question_type: str = "College Level"
     response_type: str = "Range Open Response"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10350,8 +11289,25 @@ def test_reported_status_college_type_ror_response_size_1(get_admin_token):
     question_status: str = "Reported"
     question_type: str = "College Level"
     response_type: str = "Range Open Response"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10365,8 +11321,25 @@ def test_pending_status_mathworld_type_ror_response_size_1(get_admin_token):
     question_status: str = "Pending"
     question_type: str = "Mathworld"
     response_type: str = "Range Open Response"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10380,8 +11353,25 @@ def test_approved_status_mathworld_type_ror_response_size_1(get_admin_token):
     question_status: str = "Approved"
     question_type: str = "Mathworld"
     response_type: str = "Range Open Response"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10395,8 +11385,25 @@ def test_rejected_status_mathworld_type_ror_response_size_1(get_admin_token):
     question_status: str = "Rejected"
     question_type: str = "Mathworld"
     response_type: str = "Range Open Response"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10415,9 +11422,9 @@ def test_reported_status_mathworld_type_ror_response_size_1(get_admin_token):
         "admin", response_type
     )
     mathworld_status = common.update_question_status(
-        mathworld_response["question_uuid"], question_status
+        mathworld_response["question_id"], question_status
     )
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10432,7 +11439,7 @@ def test_pending_status_staar_type_mc_response_size_1(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Multiple Choice"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10446,8 +11453,25 @@ def test_approved_status_staar_type_mc_response_size_1(get_admin_token):
     question_status: str = "Approved"
     question_type: str = "STAAR"
     response_type: str = "Multiple Choice"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10461,8 +11485,25 @@ def test_rejected_status_staar_type_mc_response_size_1(get_admin_token):
     question_status: str = "Rejected"
     question_type: str = "STAAR"
     response_type: str = "Multiple Choice"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10476,8 +11517,25 @@ def test_reported_status_staar_type_mc_response_size_1(get_admin_token):
     question_status: str = "Reported"
     question_type: str = "STAAR"
     response_type: str = "Multiple Choice"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10492,7 +11550,7 @@ def test_pending_status_college_type_mc_response_size_1(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Multiple Choice"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10507,7 +11565,7 @@ def test_approved_status_college_type_mc_response_size_1(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Multiple Choice"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size=1"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size=1"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10521,8 +11579,25 @@ def test_rejected_status_college_type_mc_response_size_1(get_admin_token):
     question_status: str = "Rejected"
     question_type: str = "College Level"
     response_type: str = "Multiple Choice"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size=1"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size=1"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10536,8 +11611,25 @@ def test_reported_status_college_type_mc_response_size_1(get_admin_token):
     question_status: str = "Reported"
     question_type: str = "College Level"
     response_type: str = "Multiple Choice"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size=1"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size=1"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10553,9 +11645,9 @@ def test_pending_status_mathworld_type_mc_response_size_1(get_admin_token):
     response_type: str = "Multiple Choice"
     page_size: int = 1
     create_response: dict = common.create_a_mathworld_question("admin", response_type)
-    question_uuid: str = create_response["question_uuid"]
-    update_response = common.update_question_status(question_uuid, question_status)
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size=1"
+    question_id: str = create_response["question_id"]
+    update_response = common.update_question_status(question_id, question_status)
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size=1"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10570,7 +11662,7 @@ def test_approved_status_mathworld_type_mc_response_size_1(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Multiple Choice"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size=1"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size=1"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10585,7 +11677,7 @@ def test_rejected_status_mathworld_type_mc_response_size_1(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Multiple Choice"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size=1"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size=1"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10600,7 +11692,7 @@ def test_pending_status_staar_type_cb_response_size_1(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Checkbox"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size=1"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size=1"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10614,8 +11706,25 @@ def test_approved_status_staar_type_cb_response_size_1(get_admin_token):
     question_status: str = "Approved"
     question_type: str = "STAAR"
     response_type: str = "Checkbox"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size=1"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size=1"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10629,8 +11738,25 @@ def test_rejected_status_staar_type_cb_response_size_1(get_admin_token):
     question_status: str = "Rejected"
     question_type: str = "STAAR"
     response_type: str = "Checkbox"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size=1"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size=1"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10646,7 +11772,7 @@ def test_reported_status_staar_type_cb_response_size_1(get_admin_token):
     question_type: str = "STAAR"
     response_type: str = "Checkbox"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10663,9 +11789,9 @@ def test_pending_status_college_type_cb_response_size_1(get_admin_token):
     page_size: int = 1
     create_response: dict = common.create_a_college_question("admin", response_type)
     update_response = common.update_question_status(
-        create_response["question_uuid"], question_status
+        create_response["question_id"], question_status
     )
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size=1"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size=1"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10680,7 +11806,7 @@ def test_approved_status_college_type_cb_response_size_1(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Checkbox"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size=1"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size=1"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10695,7 +11821,7 @@ def test_rejected_status_college_type_cb_response_size_1(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Checkbox"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10710,7 +11836,7 @@ def test_reported_status_college_type_cb_response_size_1(get_admin_token):
     question_type: str = "College Level"
     response_type: str = "Checkbox"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size=1"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size=1"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10724,8 +11850,25 @@ def test_pending_status_mathworld_type_cb_response_size_1(get_admin_token):
     question_status: str = "Pending"
     question_type: str = "Mathworld"
     response_type: str = "Checkbox"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size=1"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size=1"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10739,8 +11882,25 @@ def test_approved_status_mathworld_type_cb_response_size_1(get_admin_token):
     question_status: str = "Approved"
     question_type: str = "Mathworld"
     response_type: str = "Checkbox"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size=1"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size=1"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10755,7 +11915,7 @@ def test_rejected_status_mathworld_type_cb_response_size_1(get_admin_token):
     question_type: str = "Mathworld"
     response_type: str = "Checkbox"
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size=1"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size=1"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10771,13 +11931,14 @@ def test_reported_status_mathworld_type_cb_response_size_1(get_admin_token):
     response_type: str = "Checkbox"
     create_response: dict = common.create_a_mathworld_question("admin", response_type)
     update_response = common.update_question_status(
-        create_response["question_uuid"], question_status
+        create_response["question_id"], question_status
     )
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
+    print(questions)
     assert questions["count"] == page_size
 
 
@@ -10791,7 +11952,7 @@ def test_pending_questions_page_1_size_1(get_admin_token):
     question_status: str = "Pending"
     page_num = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&page_num={page_num}&page_size=1"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&page_num={page_num}&page_size=1"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10807,7 +11968,7 @@ def test_approved_questions_page_1_size_1(get_admin_token):
     question_status: str = "Approved"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&page_num={page_num}&page_size=1"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&page_num={page_num}&page_size=1"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10823,7 +11984,7 @@ def test_rejected_questions_page_1_size_1(get_admin_token):
     question_status: str = "Rejected"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&page_num={page_num}&page_size=1"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&page_num={page_num}&page_size=1"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10839,7 +12000,7 @@ def test_reported_questions_page_1_size_1(get_admin_token):
     question_status: str = "Reported"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&page_num={page_num}&page_size=1"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&page_num={page_num}&page_size=1"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10856,7 +12017,7 @@ def test_staar_type_pending_status_page_1_size_1(get_admin_token):
     question_status: str = "Pending"
     page_size: int = 1
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10873,7 +12034,7 @@ def test_pending_status_staar_type_page_1_size_1(get_admin_token):
     question_status: str = "Pending"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10890,7 +12051,7 @@ def test_college_level_type_pending_status_page_1_size_1(get_admin_token):
     question_status: str = "Pending"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10907,7 +12068,7 @@ def test_pending_status_college_level_type_page_1_size_1(get_admin_token):
     question_status: str = "Pending"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10924,7 +12085,7 @@ def test_pending_status_mathworld_type_page_1_size_1(get_admin_token):
     question_status: str = "Pending"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10941,7 +12102,7 @@ def test_mathworld_type_pending_status_page_1_size_1(get_admin_token):
     question_status: str = "Pending"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10958,7 +12119,7 @@ def test_approved_status_college_level_type_page_1_size_1(get_admin_token):
     question_status: str = "Approved"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&page_num={page_num}&question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&page_num={page_num}&question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10975,7 +12136,7 @@ def test_college_level_type_approved_status_page_1_size_1(get_admin_token):
     question_status: str = "Approved"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -10992,7 +12153,7 @@ def test_approved_status_mathworld_type_page_1_size_1(get_admin_token):
     question_status: str = "Approved"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11009,7 +12170,7 @@ def test_mathworld_type_approved_status_page_1_size_1(get_admin_token):
     question_status: str = "Approved"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11026,9 +12187,9 @@ def test_rejected_status_mathworld_type_page_1_size_1(get_admin_token):
     question_status: str = "Rejected"
     page_num: int = 1
     create_response: dict = common.create_a_mathworld_question("admin")
-    question_uuid: str = create_response["question_uuid"]
-    update_response = common.update_question_status(question_uuid, question_status)
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}"
+    question_id: str = create_response["question_id"]
+    update_response = common.update_question_status(question_id, question_status)
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11044,7 +12205,7 @@ def test_mathworld_type_rejected_status_page_1_size_1(get_admin_token):
     question_status: str = "Rejected"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11060,7 +12221,7 @@ def test_rejected_status_college_level_type_page_1_size_1(get_admin_token):
     question_status: str = "Rejected"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11077,7 +12238,7 @@ def test_college_level_type_rejected_status_page_1_size_1(get_admin_token):
     question_status: str = "Rejected"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11094,7 +12255,7 @@ def test_rejected_status_staar_type_page_1_size_1(get_admin_token):
     question_status: str = "Rejected"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11111,7 +12272,7 @@ def test_staar_type_rejected_status_page_1_size_1(get_admin_token):
     question_status: str = "Rejected"
     page_size: int = 1
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11128,7 +12289,7 @@ def test_reported_status_staar_type_page_1_size_1(get_admin_token):
     question_status: str = "Reported"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11145,7 +12306,7 @@ def test_staar_type_reported_status_page_1_size_1(get_admin_token):
     question_status: str = "Reported"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11162,7 +12323,7 @@ def test_reported_status__type_page_1_size_1(get_admin_token):
     question_status: str = "Reported"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11179,7 +12340,7 @@ def test_college_level_type_reported_status_page_1_size_1(get_admin_token):
     question_status: str = "Reported"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11197,9 +12358,9 @@ def test_reported_status_mathworld_type_page_1_size_1(get_admin_token):
     page_num: int = 1
     page_size: int = 1
     mathworld_response: dict = common.create_a_mathworld_question("admin")
-    question_uuid: str = mathworld_response["question_uuid"]
-    mathworld_status = common.update_question_status(question_uuid, question_status)
-    url: str = f"{req.base_url}/question/fetch/all?question_type={question_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
+    question_id: str = mathworld_response["question_id"]
+    mathworld_status = common.update_question_status(question_id, question_status)
+    url: str = f"{req.base_url}/v1/questions?question_type={question_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11218,9 +12379,9 @@ def test_mathworld_type_reported_status_page_1_size_1(get_admin_token):
     page_num: int = 1
     page_size: int = 1
     mathworld_response: dict = common.create_a_mathworld_question("admin")
-    question_uuid = mathworld_response["question_uuid"]
-    mathworld_status = common.update_question_status(question_uuid, question_status)
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&page_num={page_num}&page_size={page_size}"
+    question_id = mathworld_response["question_id"]
+    mathworld_status = common.update_question_status(question_id, question_status)
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11237,7 +12398,7 @@ def test_pending_status_ore_response(get_admin_token):
     question_status: str = "Pending"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11254,7 +12415,7 @@ def test_ore_response_pending_status_page_1_size_1(get_admin_token):
     question_status: str = "Pending"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11271,7 +12432,7 @@ def test_approved_status_ore_response_page_1_size_1(get_admin_token):
     question_status: str = "Approved"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11288,7 +12449,7 @@ def test_ore_response_approved_status_page_1_size_1(get_admin_token):
     question_status: str = "Approved"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11305,7 +12466,7 @@ def test_rejected_status_ore_response_page_1_size_1(get_admin_token):
     question_status: str = "Rejected"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11322,7 +12483,7 @@ def test_ore_response_rejected_status_page_1_size_1(get_admin_token):
     question_status: str = "Rejected"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11339,7 +12500,7 @@ def test_reported_status_ore_response_page_1_size_1(get_admin_token):
     question_status: str = "Reported"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11356,7 +12517,7 @@ def test_ore_response_reported_status_page_1_size_1(get_admin_token):
     question_status: str = "Reported"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11373,7 +12534,7 @@ def test_pending_status_ror_response_page_1_size_1(get_admin_token):
     question_status: str = "Reported"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11390,7 +12551,7 @@ def test_ror_response_pending_status_page_1_size_1(get_admin_token):
     question_status: str = "Pending"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11407,7 +12568,7 @@ def test_pending_status_mc_response_page_1_size_1(get_admin_token):
     question_status: str = "Reported"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11424,7 +12585,7 @@ def test_mc_response_pending_status_page_1_size_1(get_admin_token):
     question_status: str = "Pending"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11441,7 +12602,7 @@ def test_pending_status_cb_response_page_1_size_1(get_admin_token):
     question_status: str = "Reported"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11458,7 +12619,7 @@ def test_cb_response_pending_status_page_1_size_1(get_admin_token):
     question_status: str = "Pending"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11474,9 +12635,26 @@ def test_approved_status_ror_response_page_1_size_1(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     response_type: str = "Range Open Response"
     question_status: str = "Approved"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11491,9 +12669,26 @@ def test_ror_response_approved_status_page_1_size_1(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     response_type: str = "Range Open Response"
     question_status: str = "Approved"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11510,7 +12705,7 @@ def test_approved_status_mc_response_page_1_size_1(get_admin_token):
     question_status: str = "Approved"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11527,7 +12722,7 @@ def test_mc_response_approved_status_page_1_size_1(get_admin_token):
     question_status: str = "Approved"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11544,7 +12739,7 @@ def test_rejected_status_ror_response_page_1_size_1(get_admin_token):
     question_status: str = "Rejected"
     page_size: int = 1
     page_num: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11561,7 +12756,7 @@ def test_ror_response_rejected_status_page_1_size_1(get_admin_token):
     question_status: str = "Rejected"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11578,7 +12773,7 @@ def test_reported_status_ror_response_page_1_size_1(get_admin_token):
     question_status: str = "Reported"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11595,7 +12790,7 @@ def test_ror_response_reported_status_page_1_size_1(get_admin_token):
     question_status: str = "Reported"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11612,7 +12807,7 @@ def test_rejected_status_mc_response_page_1_size_1(get_admin_token):
     question_status: str = "Rejected"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11629,7 +12824,7 @@ def test_mc_response_rejected_status_page_1_size_1(get_admin_token):
     question_status: str = "Rejected"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11646,7 +12841,7 @@ def test_reported_status_mc_response_page_1_size_1(get_admin_token):
     question_status: str = "Reported"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11663,7 +12858,7 @@ def test_mc_response_reported_status_page_1_size_1(get_admin_token):
     question_status: str = "Reported"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11680,7 +12875,7 @@ def test_rejected_status_cb_response_page_1_size_1(get_admin_token):
     question_status: str = "Rejected"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11697,7 +12892,7 @@ def test_cb_response_rejected_status_page_1_size_1(get_admin_token):
     question_status: str = "Rejected"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11714,7 +12909,7 @@ def test_cb_response_reported_status_page_1_size_1(get_admin_token):
     question_status: str = "Reported"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?response_type={response_type}&question_status={question_status}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11731,7 +12926,7 @@ def test_reported_status_cb_response_page_1_size_1(get_admin_token):
     question_status: str = "Reported"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11749,7 +12944,7 @@ def test_pending_status_staar_type_ore_response_page_1_size_1(get_admin_token):
     response_type: str = "Open Response Exact"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11767,7 +12962,7 @@ def test_approved_status_staar_type_ore_response_page_1_size_1(get_admin_token):
     response_type: str = "Open Response Exact"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11785,7 +12980,7 @@ def test_rejected_status_staar_type_ore_response_page_1_size_1(get_admin_token):
     response_type: str = "Open Response Exact"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11803,7 +12998,7 @@ def test_reported_status_staar_type_ore_response_page_1_size_1(get_admin_token):
     response_type: str = "Open Response Exact"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11821,7 +13016,7 @@ def test_pending_status_college_type_ore_response_page_1_size_1(get_admin_token)
     response_type: str = "Open Response Exact"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11839,7 +13034,7 @@ def test_approved_status_college_type_ore_response_page_1_size_1(get_admin_token
     response_type: str = "Open Response Exact"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11857,7 +13052,7 @@ def test_rejected_status_college_type_ore_response_page_1_size_1(get_admin_token
     response_type: str = "Open Response Exact"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11875,7 +13070,7 @@ def test_reported_status_college_type_ore_response_page_1_size_1(get_admin_token
     response_type: str = "Open Response Exact"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11893,7 +13088,7 @@ def test_pending_status_mathworld_type_ore_response_page_1_size_1(get_admin_toke
     response_type: str = "Open Response Exact"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11911,7 +13106,7 @@ def test_approved_status_mathworld_type_ore_response_page_1_size_1(get_admin_tok
     response_type: str = "Open Response Exact"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11929,7 +13124,7 @@ def test_rejected_status_mathworld_type_ore_response_page_1_size_1(get_admin_tok
     response_type: str = "Open Response Exact"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11949,9 +13144,9 @@ def test_reported_status_mathworld_type_ore_response_page_1_size_1(get_admin_tok
     page_size: int = 1
     count: int = 1
     create_response: dict = common.create_a_mathworld_question("staff", response_type)
-    question_uuid: str = create_response["question_uuid"]
-    update_response = common.update_question_status(question_uuid, question_status)
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    question_id: str = create_response["question_id"]
+    update_response = common.update_question_status(question_id, question_status)
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11969,7 +13164,7 @@ def test_pending_status_college_type_ror_response_page_1_size_1(get_admin_token)
     response_type: str = "Range Open Response"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -11985,9 +13180,26 @@ def test_approved_status_college_type_ror_response_page_1_size_1(get_admin_token
     question_status: str = "Approved"
     question_type: str = "College Level"
     response_type: str = "Range Open Response"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -12003,9 +13215,26 @@ def test_rejected_status_college_type_ror_response_page_1_size_1(get_admin_token
     question_status: str = "Rejected"
     question_type: str = "College Level"
     response_type: str = "Range Open Response"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -12021,9 +13250,26 @@ def test_reported_status_college_type_ror_response_page_1_size_1(get_admin_token
     question_status: str = "Reported"
     question_type: str = "College Level"
     response_type: str = "Range Open Response"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -12039,9 +13285,26 @@ def test_pending_status_mathworld_type_ror_response_page_1_size_1(get_admin_toke
     question_status: str = "Pending"
     question_type: str = "Mathworld"
     response_type: str = "Range Open Response"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -12057,9 +13320,26 @@ def test_approved_status_mathworld_type_ror_response_page_1_size_1(get_admin_tok
     question_status: str = "Approved"
     question_type: str = "Mathworld"
     response_type: str = "Range Open Response"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -12075,9 +13355,26 @@ def test_rejected_status_mathworld_type_ror_response_page_1_size_1(get_admin_tok
     question_status: str = "Rejected"
     question_type: str = "Mathworld"
     response_type: str = "Range Open Response"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -12099,9 +13396,9 @@ def test_reported_status_mathworld_type_ror_response_page_1_size_1(get_admin_tok
     mathworld_response: dict = common.create_a_mathworld_question(
         "admin", response_type
     )
-    question_uuid = mathworld_response["question_uuid"]
-    mathworld_status = common.update_question_status(question_uuid, question_status)
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    question_id = mathworld_response["question_id"]
+    mathworld_status = common.update_question_status(question_id, question_status)
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -12119,7 +13416,7 @@ def test_pending_status_staar_type_mc_response_page_1_size_1(get_admin_token):
     response_type: str = "Multiple Choice"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -12135,9 +13432,26 @@ def test_approved_status_staar_type_mc_response_page_1_size_1(get_admin_token):
     question_status: str = "Approved"
     question_type: str = "STAAR"
     response_type: str = "Multiple Choice"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -12153,9 +13467,26 @@ def test_rejected_status_staar_type_mc_response_page_1_size_1(get_admin_token):
     question_status: str = "Rejected"
     question_type: str = "STAAR"
     response_type: str = "Multiple Choice"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -12171,9 +13502,26 @@ def test_reported_status_staar_type_mc_response_page_1_size_1(get_admin_token):
     question_status: str = "Reported"
     question_type: str = "STAAR"
     response_type: str = "Multiple Choice"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -12191,7 +13539,7 @@ def test_pending_status_college_type_mc_response_page_1_size_1(get_admin_token):
     response_type: str = "Multiple Choice"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -12209,11 +13557,11 @@ def test_approved_status_college_type_mc_response_page_1_size_1(get_admin_token)
     response_type: str = "Multiple Choice"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     create_response: dict = common.create_a_mathworld_question("admin", response_type)
     time.sleep(1)
-    question_uuid: str = create_response["question_uuid"]
-    update_response = common.update_question_status(question_uuid, question_status)
+    question_id: str = create_response["question_id"]
+    update_response = common.update_question_status(question_id, question_status)
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -12228,9 +13576,26 @@ def test_rejected_status_college_type_mc_response_page_1_size_1(get_admin_token)
     question_status: str = "Rejected"
     question_type: str = "College Level"
     response_type: str = "Multiple Choice"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -12246,9 +13611,26 @@ def test_reported_status_college_type_mc_response_page_1_size_1(get_admin_token)
     question_status: str = "Reported"
     question_type: str = "College Level"
     response_type: str = "Multiple Choice"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -12267,10 +13649,10 @@ def test_pending_status_mathworld_type_mc_response_page_1_size_1(get_admin_token
     page_num: int = 1
     page_size: int = 1
     page_count: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     create_response: dict = common.create_a_mathworld_question("admin", response_type)
-    question_uuid: str = create_response["question_uuid"]
-    update_response = common.update_question_status(question_uuid, question_status)
+    question_id: str = create_response["question_id"]
+    update_response = common.update_question_status(question_id, question_status)
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -12288,7 +13670,7 @@ def test_approved_status_mathworld_type_mc_response_page_1_size_1(get_admin_toke
     response_type: str = "Multiple Choice"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -12306,7 +13688,7 @@ def test_rejected_status_mathworld_type_mc_response_page_1_size_1(get_admin_toke
     response_type: str = "Multiple Choice"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -12324,7 +13706,7 @@ def test_pending_status_staar_type_cb_response_page_1_size_1(get_admin_token):
     response_type: str = "Checkbox"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -12340,9 +13722,26 @@ def test_approved_status_staar_type_cb_response_page_1_size_1(get_admin_token):
     question_status: str = "Approved"
     question_type: str = "STAAR"
     response_type: str = "Checkbox"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -12358,9 +13757,26 @@ def test_rejected_status_staar_type_cb_response_page_1_size_1(get_admin_token):
     question_status: str = "Rejected"
     question_type: str = "STAAR"
     response_type: str = "Checkbox"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -12380,9 +13796,9 @@ def test_reported_status_staar_type_cb_response_page_1_size_1(get_admin_token):
     page_num: int = 1
     page_size: int = 1
     create_response: dict = common.create_a_staar_question("admin", response_type)
-    question_uuid: str = create_response["question_uuid"]
-    update_response = common.update_question_status(question_uuid, question_status)
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    question_id: str = create_response["question_id"]
+    update_response = common.update_question_status(question_id, question_status)
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -12400,7 +13816,7 @@ def test_pending_status_college_type_cb_response_page_1_size_1(get_admin_token):
     response_type: str = "Checkbox"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -12418,7 +13834,7 @@ def test_approved_status_college_type_cb_response_page_1_size_1(get_admin_token)
     response_type: str = "Checkbox"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -12436,7 +13852,7 @@ def test_rejected_status_college_type_cb_response_page_1_size_1(get_admin_token)
     response_type: str = "Checkbox"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -12456,9 +13872,9 @@ def test_reported_status_college_type_cb_response_page_1_size_1(get_admin_token)
     page_size: int = 1
     create_response: dict = common.create_a_college_question("admin", response_type)
     update_response = common.update_question_status(
-        create_response["question_uuid"], question_status
+        create_response["question_id"], question_status
     )
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -12474,9 +13890,26 @@ def test_pending_status_mathworld_type_cb_response_page_1_size_1(get_admin_token
     question_status: str = "Pending"
     question_type: str = "Mathworld"
     response_type: str = "Checkbox"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -12492,9 +13925,26 @@ def test_approved_status_mathworld_type_cb_response_page_1_size_1(get_admin_toke
     question_status: str = "Approved"
     question_type: str = "Mathworld"
     response_type: str = "Checkbox"
+    question_classic: dict = get_db().question_collection.find_one(
+        {"question_type": question_type, "response_type": response_type}
+    )
+    sql_classic_id: str = question_classic["_id"]
+    patch_payload = json.dumps(
+        {
+            "status": f"{question_status}",
+            "update_note": "Updated status",
+        }
+    )
+
+    patch_url: str = (
+        f"{req.base_url}/v1/questions/update/question_status/{sql_classic_id}"
+    )
+    patch_response = requests.request(
+        "PATCH", patch_url, headers=headers, data=patch_payload
+    )
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -12512,7 +13962,7 @@ def test_rejected_status_mathworld_type_cb_response_page_1_size_1(get_admin_toke
     response_type: str = "Checkbox"
     page_num: int = 1
     page_size: int = 1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -12532,9 +13982,9 @@ def test_reported_status_mathworld_type_cb_response_page_1_size_1(get_admin_toke
     page_size: int = 1
     create_response: dict = common.create_a_mathworld_question("admin", response_type)
     update_response = common.update_question_status(
-        create_response["question_uuid"], question_status
+        create_response["question_id"], question_status
     )
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&question_type={question_type}&response_type={response_type}&page_num={page_num}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -12551,7 +14001,7 @@ def test_pending_question_size_2(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_status: str = "Pending"
     page_size: int = 2
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -12565,7 +14015,7 @@ def test_pending_question_size_large(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_status: str = "Pending"
     page_size: int = 500
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 200
     questions: dict = json.loads(response.text)
@@ -12579,7 +14029,7 @@ def test_pending_question_size_zero(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_status: str = "Pending"
     page_size: int = 0
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
@@ -12592,7 +14042,7 @@ def test_pending_question_size_negative(get_admin_token):
     headers: dict = req.create_basic_headers(token=get_admin_token)
     question_status: str = "Pending"
     page_size: int = -1
-    url: str = f"{req.base_url}/question/fetch/all?question_status={question_status}&page_size={page_size}"
+    url: str = f"{req.base_url}/v1/questions?question_status={question_status}&page_size={page_size}"
     response = requests.request("GET", url, headers=headers)
     assert response.status_code == 400
     questions: dict = json.loads(response.text)
