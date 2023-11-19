@@ -1,4 +1,5 @@
-import sys, os
+import os
+import sys
 
 CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 WORKING_DIR = os.path.abspath(CURRENT_DIR)
@@ -21,5 +22,6 @@ def expired_token():
         "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImhlbHBAZXhhbXBsZS5jb20iLCJleHAiOjE2NjExMzQ4MTN9.QW6TRONFqO4KOZfajIVck3Mgjk3fJpZeAO4IsDguiy8"
     }
 
-def pytest_html_report_title(report):
-    report.title = "MathMatter Admin BackEnd APIs"
+
+# def pytest_html_report_title(report):
+#     report.title = "MathMatter Admin BackEnd APIs"
