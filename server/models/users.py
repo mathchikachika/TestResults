@@ -15,6 +15,14 @@ from server.models.validators.accounts_validator import (
 
 
 def is_not_empty(cls, values):
+    """
+    The function `is_not_empty` checks if certain attributes in a dictionary are empty and raises a
+    ValueError if they are.
+    
+    :param cls: The parameter `cls` is not used in the function and can be removed
+    :param values: The `values` parameter is a dictionary that contains attribute-value pairs
+    :return: the `values` dictionary.
+    """
     for attr, value in values.items():
         if (
             attr == "middle_name"
@@ -30,6 +38,8 @@ def is_not_empty(cls, values):
     return values
 
 
+# The User class represents a user with various attributes such as subscriber ID, name, role, status,
+# email, password, and timestamps for creation and update.
 class User(Document):
     subscriber_id: str
     first_name: str
@@ -50,11 +60,14 @@ class User(Document):
     def set_created_at_now(v):
         return v or datetime.utcnow()
 
+# The class "Settings" defines the name of a collection and its indexes.
     class Settings:
         name = "user_collection"
         indexes = [[("role", 1)]]
 
 
+# The ContactPerson class represents a person's contact information including their name,
+# relationship, address, and phone number.
 class ContactPerson(BaseModel):
     first_name: str
     middle_name: Optional[str] = None
@@ -68,12 +81,17 @@ class ContactPerson(BaseModel):
     phone_number: Optional[str] = None
 
 
+# The `OfficeDetails` class represents the details of an office, including its location, conference
+# time (optional), and phone number.
 class OfficeDetails(BaseModel):
     location: str
     conference_time: Optional[str] = None
     phone_number: str
 
 
+# The `Education` class represents a person's educational background, including the school they
+# attended, degree obtained (optional), area of study (optional), and the years they started and ended
+# their education.
 class Education(BaseModel):
     school: str
     degree: Optional[str] = None
@@ -82,19 +100,26 @@ class Education(BaseModel):
     year_ended: str
 
 
+# The `EducationList` class is a subclass of `BaseModel` and represents a list of `Education` objects.
 class EducationList(BaseModel):
     education: List[Education]
 
 
+# The Student class is a subclass of the User class and has a contact_person attribute of type
+# ContactPerson.
 class Student(User):
     contact_person: ContactPerson
 
 
+# The `Teacher` class is a subclass of `User` and includes optional attributes for office details and
+# education.
 class Teacher(User):
     office_details: Optional[OfficeDetails] = None
     education: Optional[List[Education]] = None
 
 
+# The `LogIn` class is a data model for validating and storing user login information, specifically
+# the email and password.
 class LogIn(BaseModel):
     email: str
     password: str
@@ -110,6 +135,7 @@ class LogIn(BaseModel):
         else:
             raise ValueError("email field should not be empty")
 
+# The `Config` class has a `json_schema_extra` attribute that contains an example JSON schema.
     class Config:
         json_schema_extra = {
             "example": {
@@ -119,6 +145,9 @@ class LogIn(BaseModel):
         }
 
 
+# The `Registration` class is a model for creating a student account with required fields such as
+# first name, last name, role, school, email, password, and repeat password, along with an optional
+# middle name and contact person.
 class Registration(BaseModel):
     first_name: str
     middle_name: Optional[str] = None
@@ -211,15 +240,20 @@ class Registration(BaseModel):
 #         }
 
 
+# The UserAccount class represents a user account with an email and role.
 class UserAccount(BaseModel):
     email: str
     role: str
 
 
+# The UserAccounts class is a subclass of BaseModel and contains a list of UserAccount objects.
 class UserAccounts(BaseModel):
     accounts: List[UserAccount]
 
 
+# The class `UserResponseModel` represents a user response with various attributes such as id,
+# subscriber_id, first_name, last_name, role, status, email, created_by, created_at, updated_by, and
+# updated_at.
 class UserResponseModel(BaseModel):
     id: PydanticObjectId = Field(alias="_id")
     subscriber_id: str
@@ -235,6 +269,9 @@ class UserResponseModel(BaseModel):
     updated_at: Optional[datetime] = None
 
 
+# The `InitialUserAccountResponseModel` class represents the response model for an initial user
+# account, including attributes such as ID, subscriber ID, role, status, email, creation date, and
+# update date.
 class InitialUserAccountResponseModel(BaseModel):
     id: PydanticObjectId = Field(alias="_id")
     subscriber_id: str
@@ -245,6 +282,8 @@ class InitialUserAccountResponseModel(BaseModel):
     updated_at: Optional[datetime] = None
 
 
+# The class `UpdatedUserViaSubscriber` represents a user with updated information, including their
+# first name, middle name, last name, email, and details about who updated the user and when.
 class UpdatedUserViaSubscriber(BaseModel):
     first_name: str
     middle_name: Optional[str] = None
@@ -257,6 +296,7 @@ class UpdatedUserViaSubscriber(BaseModel):
     def set_updated_at_now(v):
         return v or datetime.utcnow()
 
+# The `Config` class contains a JSON schema with an example object.
     class Config:
         json_schema_extra = {
             "example": {
@@ -268,6 +308,8 @@ class UpdatedUserViaSubscriber(BaseModel):
         }
 
 
+# The `UpdatedRole` class represents a role with optional fields for the user who updated it and the
+# timestamp of the update.
 class UpdatedRole(BaseModel):
     role: str
     updated_by: Optional[str] = None
@@ -277,6 +319,7 @@ class UpdatedRole(BaseModel):
     def set_updated_at_now(v):
         return v or datetime.utcnow()
 
+# The `Config` class has a `json_schema_extra` attribute that contains an example JSON schema.
     class Config:
         json_schema_extra = {
             "example": {
@@ -285,6 +328,8 @@ class UpdatedRole(BaseModel):
         }
 
 
+# The class `UpdatedStatus` represents an updated status with optional fields for the updater's name
+# and the update timestamp.
 class UpdatedStatus(BaseModel):
     status: str
     updated_by: Optional[str] = None
@@ -294,6 +339,7 @@ class UpdatedStatus(BaseModel):
     def set_updated_at_now(v):
         return v or datetime.utcnow()
 
+# The class `Config` has a `json_schema_extra` attribute that contains an example JSON schema.
     class Config:
         json_schema_extra = {
             "example": {
@@ -302,6 +348,8 @@ class UpdatedStatus(BaseModel):
         }
 
 
+# The `ResetPassword` class is a data model that represents a password reset request, including the
+# new password, the user who updated it, and the timestamp of the update.
 class ResetPassword(BaseModel):
     password: Optional[str] = None
     updated_by: Optional[str] = None

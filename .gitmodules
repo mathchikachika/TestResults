@@ -1,0 +1,6 @@
+[submodule "tests/MathWorldAPIs"]
+	path = tests/MathWorldAPIs
+	url = git@github.com:mathchikachika/TestResults.git
+[submodule "tests/MathWorldAPIReports"]
+	path = tests/MathWorldAPIReports
+	url = git@github.com:mathchikachika/TestResults.git

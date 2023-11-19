@@ -13,6 +13,8 @@ from server.models.validators.accounts_validator import (
 )
 
 
+# The below class represents an account with various attributes such as first name, last name, role,
+# email, password, and timestamps for creation and update.
 class Account(Document):
     first_name: str
     middle_name: Optional[str] = None
@@ -38,10 +40,14 @@ class Account(Document):
         indexes = [[("role", 1)]]
 
 
+# The `SubscriberAccount` class is a subclass of the `Account` class and includes an additional
+# attribute `school` of type string.
 class SubscriberAccount(Account):
     school: str
 
 
+# The `LogIn` class is a data model for validating and storing user login information, specifically
+# the email and password.
 class LogIn(BaseModel):
     email: str
     password: str
@@ -57,6 +63,7 @@ class LogIn(BaseModel):
         else:
             raise ValueError("email field should not be empty")
 
+# The `Config` class has a `json_schema_extra` attribute that contains an example JSON schema.
     class Config:
         json_schema_extra = {
             "example": {
@@ -66,12 +73,15 @@ class LogIn(BaseModel):
         }
 
 
+# The `Registration` class represents a user registration form with optional school field and password
+# validation.
 class Registration(Account):
     school: Optional[str] = None
     repeat_password: str
 
     _validate_fields = model_validator(mode="before")(validate_fields)
 
+# The `Config` class contains a JSON schema with an example of a user's information.
     class Config:
         json_schema_extra = {
             "example": {
@@ -87,6 +97,8 @@ class Registration(Account):
         }
 
 
+# The `UpdatedAccount` class is a model that represents an updated account with fields such as first
+# name, middle name, last name, role, email, and information about the update.
 class UpdatedAccount(BaseModel):
     first_name: str
     middle_name: Optional[str] = None
@@ -102,10 +114,15 @@ class UpdatedAccount(BaseModel):
         return v or datetime.utcnow()
 
 
+# The class `UpdatedSubscriberAccount` is a subclass of `UpdatedAccount` that includes an additional
+# attribute `school` of type `str`.
 class UpdatedSubscriberAccount(UpdatedAccount):
     school: str
 
 
+# The `UpdatedPassword` class represents a model for updating a password, including fields for the old
+# password, new password, repeat new password, and optional fields for the user who updated the
+# password and the timestamp of the update.
 class UpdatedPassword(BaseModel):
     old_password: str
     new_password: str
@@ -118,6 +135,7 @@ class UpdatedPassword(BaseModel):
     def set_updated_at_now(v):
         return v or datetime.utcnow()
 
+# The `Config` class contains a JSON schema example for password change.
     class Config:
         json_schema_extra = {
             "example": {
@@ -128,6 +146,8 @@ class UpdatedPassword(BaseModel):
         }
 
 
+# The `AccountResponseModel` class represents a response model for an account, with various attributes
+# such as id, name, role, email, and timestamps for creation and update.
 class AccountResponseModel(BaseModel):
     id: PydanticObjectId = Field(alias="_id")
     first_name: str
@@ -141,5 +161,7 @@ class AccountResponseModel(BaseModel):
     updated_at: Optional[datetime] = None
 
 
+# The class `SubscriberAccountResponseModel` is a subclass of `AccountResponseModel` and includes an
+# additional attribute `school` of type `str`.
 class SubscriberAccountResponseModel(AccountResponseModel):
     school: str
