@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+from main import PyInstrumentMiddleWare
 from server.connection.database import init_db
 from server.routes.version1.activities import router as ActivityRouterV1
 from server.routes.version1.questions import router as QuestionRouterV1
@@ -16,6 +18,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(PyInstrumentMiddleWare)
 
 
 @app.on_event("startup")
