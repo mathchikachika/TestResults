@@ -36,7 +36,7 @@ def get_admin_token():
     print("\n\n---- Tear Down Test ----\n")
 
 
-@pytest.mark.tc_001
+@pytest.mark.order(1)
 def test_update_staar_question(get_admin_token):
     req: Requester = Requester()
     staar_classic = get_db().question_collection.find_one({"question_type": "STAAR"})
@@ -76,7 +76,7 @@ def test_update_staar_question(get_admin_token):
     assert_that(sql_updated_status).is_equal_to(sql_classic_status)
 
 
-@pytest.mark.tc_002
+@pytest.mark.order(2)
 def test_update_staar_question_invalid_id(get_admin_token):
     req: Requester = Requester()
     staar_classic: list = get_db().question_collection.find_one(

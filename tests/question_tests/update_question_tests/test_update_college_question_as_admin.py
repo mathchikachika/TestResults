@@ -36,7 +36,7 @@ def get_admin_token():
     print("\n\n---- Tear Down Test ----\n")
 
 
-@pytest.mark.tc_001
+@pytest.mark.order(1)
 def test_update_college_question(get_admin_token):
     req: Requester = Requester()
     college_classic = get_db().question_collection.find_one(
@@ -81,7 +81,7 @@ def test_update_college_question(get_admin_token):
     assert_that(sql_updated_status).is_equal_to(sql_classic_status)
 
 
-@pytest.mark.tc_002
+@pytest.mark.order(2)
 def test_update_college_question_invalid_id(get_admin_token):
     req: Requester = Requester()
     college_classic: list = get_db().question_collection.find_one(

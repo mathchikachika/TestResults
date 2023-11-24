@@ -45,7 +45,7 @@ def get_admin_token():
 # Pending -> Rejected
 # Pending -> Reported
 # ----------------------------------------
-@pytest.mark.tc_001
+@pytest.mark.order(1)
 def test_status_pending_to_approved(get_admin_token):
     req = Requester()
     random_data: dict = common.get_random_payload_data()
@@ -88,7 +88,7 @@ def test_status_pending_to_approved(get_admin_token):
 # ---------------------------------------------------------------------------------
 
 
-@pytest.mark.tc_002
+@pytest.mark.order(2)
 def test_status_pending_to_reported(get_admin_token):
     req = Requester()
     create_url = f"{req.base_url}/v1/questions/create"
@@ -126,7 +126,7 @@ def test_status_pending_to_reported(get_admin_token):
     assert_that(json_patch_response["data"]["question_type"]).is_equal_to(question_type)
 
 
-@pytest.mark.tc_003
+@pytest.mark.order(3)
 def test_status_pending_to_rejected_by_payload(get_admin_token):
     req = Requester()
     create_url = f"{req.base_url}/v1/questions/create"
@@ -166,7 +166,7 @@ def test_status_pending_to_rejected_by_payload(get_admin_token):
 # ---------------------------------------------------------------------------------
 
 
-@pytest.mark.tc_004
+@pytest.mark.order(4)
 def test_status_approved_to_pending(get_admin_token):
     req = Requester()
     random_data: dict = common.get_random_payload_data()
@@ -204,7 +204,7 @@ def test_status_approved_to_pending(get_admin_token):
     )
 
 
-@pytest.mark.tc_005
+@pytest.mark.order(5)
 def test_status_rejected_to_pending(get_admin_token):
     req = Requester()
     random_data: dict = common.get_random_payload_data()
@@ -242,7 +242,7 @@ def test_status_rejected_to_pending(get_admin_token):
     )
 
 
-@pytest.mark.tc_005
+@pytest.mark.order(6)
 def test_status_reported_to_pending(get_admin_token):
     req = Requester()
     random_data: dict = common.get_random_payload_data()
@@ -288,7 +288,7 @@ def test_status_reported_to_pending(get_admin_token):
 # ---------------------------------------------------------------------------------
 
 
-@pytest.mark.tc_006
+@pytest.mark.order(7)
 def test_status_approved_to_approved(get_admin_token):
     req = Requester()
     random_data: dict = common.get_random_payload_data()
@@ -326,7 +326,7 @@ def test_status_approved_to_approved(get_admin_token):
     )
 
 
-@pytest.mark.tc_007
+@pytest.mark.order(8)
 def test_status_rejected_to_approved(get_admin_token):
     req = Requester()
     random_data: dict = common.get_random_payload_data()
@@ -372,7 +372,7 @@ def test_status_rejected_to_approved(get_admin_token):
 # ---------------------------------------------------------------------------------
 
 
-@pytest.mark.tc_008
+@pytest.mark.order(9)
 def test_status_approved_to_reported(get_admin_token):
     req = Requester()
     random_data: dict = common.get_random_payload_data()
@@ -410,7 +410,7 @@ def test_status_approved_to_reported(get_admin_token):
     )
 
 
-@pytest.mark.tc_009
+@pytest.mark.order(10)
 def test_status_rejected_to_reported(get_admin_token):
     req = Requester()
     random_data: dict = common.get_random_payload_data()
@@ -448,7 +448,7 @@ def test_status_rejected_to_reported(get_admin_token):
     )
 
 
-@pytest.mark.tc_010
+@pytest.mark.order(11)
 def test_status_reported_to_approved(get_admin_token):
     req = Requester()
     random_data: dict = common.get_random_payload_data()
@@ -486,7 +486,7 @@ def test_status_reported_to_approved(get_admin_token):
     )
 
 
-@pytest.mark.tc_011
+@pytest.mark.order(12)
 def test_status_pending_to_pending(get_admin_token):
     req = Requester()
     random_data: dict = common.get_random_payload_data()
@@ -532,7 +532,7 @@ def test_status_pending_to_pending(get_admin_token):
 # ---------------------------------------------------------------------------------
 
 
-@pytest.mark.tc_012
+@pytest.mark.order(13)
 def test_status_approved_to_rejected(get_admin_token):
     req = Requester()
     random_data: dict = common.get_random_payload_data()
@@ -570,7 +570,7 @@ def test_status_approved_to_rejected(get_admin_token):
     )
 
 
-@pytest.mark.tc_013
+@pytest.mark.order(14)
 def test_status_rejected_to_rejected(get_admin_token):
     req = Requester()
     random_data: dict = common.get_random_payload_data()
@@ -608,7 +608,7 @@ def test_status_rejected_to_rejected(get_admin_token):
     )
 
 
-@pytest.mark.tc_014
+@pytest.mark.order(15)
 def test_status_reported_to_rejected(get_admin_token):
     req = Requester()
     random_data: dict = common.get_random_payload_data()
@@ -646,7 +646,7 @@ def test_status_reported_to_rejected(get_admin_token):
     )
 
 
-@pytest.mark.tc_015
+@pytest.mark.order(16)
 def test_status_pending_to_rejected(get_admin_token):
     req = Requester()
     random_data: dict = common.get_random_payload_data()

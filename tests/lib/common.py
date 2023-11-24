@@ -16,7 +16,6 @@ import random
 import string
 import uuid
 from datetime import datetime, timedelta
-from random import random
 from uuid import UUID
 
 import lib.common as common
