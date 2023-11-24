@@ -39,7 +39,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/linux_requirements.txt') }}
           restore-keys: | 
             ${{ runner.os }}-pip-
           
@@ -47,11 +47,6 @@ jobs:
         id: Setup_Python
         run: |
             python3 --version
-            sudo add-apt-repository ppa:deadsnakes/ppa
-            sudo apt update
-            sudo apt install python3.12
-            sudo update-alternatives --config python3
-            python3 -V
             python3 -m venv venv             
             source venv/bin/activate
             
@@ -61,7 +56,7 @@ jobs:
             source venv/bin/activate
             pip install --upgrade pip
             pip install pytest pytest-xdist
-            pip install -r requirements.txt   
+            pip install -r linux_requirements.txt   
             pip install --upgrade fastapi
             sudo apt-get install python3-tk
             sudo apt-get update -y  
@@ -80,15 +75,15 @@ jobs:
         id: Start_Web
         run: |            
             source venv/bin/activate                            
-            python3 main.py &
+            uvicorn src.app:app &
 
       - name: Setup & Execute Test
         id: Execute_Test 
         run: |
           source venv/bin/activate
-          cd tests/MathWorldAPIReports
-          pwd
-          pytest -v -s  ../question_tests/
+          cd tests         
+          cd MathWorldAPIReports
+          pytest --reruns 4 --reruns-delay 5  -v -s -n 3 --html=index.html --self-contained-html ../question_tests/ ../staff_tests/ ../sharp_tests
                               
       - name: Upload Test Artifacts
         id: Artifacts
