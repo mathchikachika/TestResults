@@ -83,6 +83,8 @@ jobs:
           source venv/bin/activate
           cd tests         
           cd MathWorldAPIReports
+          pip install pytest-html
+          pip install pytest-rerunfailures pytest-xdist
           pytest -v -s -n 3 --html=index.html --self-contained-html ../question_tests/ ../staff_tests/ 
                               
       - name: Upload Test Artifacts
