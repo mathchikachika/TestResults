@@ -75,13 +75,14 @@ jobs:
         id: Start_Web
         run: |            
             source venv/bin/activate                            
-            uvicorn src.app:app &
+            python3 main.py &
 
       - name: Setup & Execute Test
         id: Execute_Test 
         run: |
           source venv/bin/activate
-          cd tests/MathWorldAPIReports          
+          cd tests/MathWorldAPIReports
+          pwd
           pytest -v -s  ../question_tests/
                               
       - name: Upload Test Artifacts
