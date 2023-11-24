@@ -39,7 +39,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/linux_requirements.txt') }}
           restore-keys: | 
             ${{ runner.os }}-pip-
           
@@ -56,7 +56,7 @@ jobs:
             source venv/bin/activate
             pip install --upgrade pip
             pip install pytest pytest-xdist
-            pip install -r requirements.txt   
+            pip install -r linux_requirements.txt   
             pip install --upgrade fastapi
             sudo apt-get install python3-tk
             sudo apt-get update -y  
@@ -83,7 +83,7 @@ jobs:
           source venv/bin/activate
           cd tests         
           cd MathWorldAPIReports
-          pytest -v -s -n 3 --html=index.html --self-contained-html ../question_tests/ ../staff_tests/ 
+          pytest --reruns 4 --reruns-delay 5  -v -s -n 3 --html=index.html --self-contained-html ../question_tests/ ../staff_tests/ ../sharp_tests
                               
       - name: Upload Test Artifacts
         id: Artifacts
