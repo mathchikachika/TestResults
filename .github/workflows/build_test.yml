@@ -14,7 +14,7 @@ jobs:
     env: 
         SLACK_WEBHOOK_URL: ${{secrets.SLACK_WEBHOOK_URL}}
         PAT_YSH: ${{secrets.YSH_PAT}}
-        TEST_REPORT: ///home/runner/work/Admin-MathWorldBackEnd/Admin-MathWorldBackEnd/tests/MathWorldAPIReports 
+        TEST_REPORT: ///home/runner/work/Admin-BackEnd-Mongo/Admin-BackEndMongo/tests/MathWorldAPIReports 
         RUN_NUMBER: $GITHUB_RUN_NUMBER
         RUNER_NAME: $RUNNER_NAME
         ACTION_NAME: $GITHUB_ACTION       
@@ -26,7 +26,7 @@ jobs:
           echo '**** VERSION *******: ' $(cat version.txt)
           echo '**** RUN NUMBER ****: ' ${{env.RUN_NUMBER}}   
         env:
-          TEST_REPORT: ///home/runner/work/Admin-MathWorldBackEnd/Admin-MathWorldBackEnd/tests/MathWorldAPIReports
+          TEST_REPORT: ///home/runner/work/Admin-BackEnd-Mongo/Admin-BackEnd-Mongo/tests/MathWorldAPIReports
           RUN_NUMBER: $GITHUB_RUN_NUMBER
           RUNER_NAME: $RUNNER_NAME
           ACTION_NAME: $GITHUB_ACTION               
