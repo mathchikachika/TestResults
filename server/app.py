@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from main import PyInstrumentMiddleWare
-from server.connection.database import init_db
+from server.connection.database import create_initial_users, init_db
 from server.routes.version1.activities import router as ActivityRouterV1
 from server.routes.version1.questions import router as QuestionRouterV1
 from server.routes.version1.subscribers import router as SubscriberRouterV1
@@ -24,6 +24,7 @@ app.add_middleware(PyInstrumentMiddleWare)
 @app.on_event("startup")
 async def start_db():
     await init_db()
+    await create_initial_users()
 
 
 @app.get(
