@@ -4,12 +4,18 @@ from fastapi.middleware.cors import CORSMiddleware
 from main import PyInstrumentMiddleWare
 from server.connection.database import create_initial_users, init_db
 from server.routes.version1.activities import router as ActivityRouterV1
+from server.routes.version1.assignments import router as AssignmentRouterV1
+from server.routes.version1.classes import router as ClassesRouterV1
 from server.routes.version1.questions import router as QuestionRouterV1
 from server.routes.version1.subscribers import router as SubscriberRouterV1
 from server.routes.version1.team_accounts import router as AccountRouterV1
 from server.routes.version1.users import router as UserRouterV1
 
-app = FastAPI()
+app = FastAPI(
+    title="MathMatters APIs",
+    description="These APIs encompass the entire MathMatters Platform, serving both the admin portal and user portal.",
+    version="1.0.0",
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -40,3 +46,5 @@ app.include_router(AccountRouterV1, tags=["Team Accounts"], prefix="/v1/team_acc
 app.include_router(ActivityRouterV1, tags=["Activities"], prefix="/v1/activities")
 app.include_router(SubscriberRouterV1, tags=["Subscribers"], prefix="/v1/subscribers")
 app.include_router(UserRouterV1, tags=["Users"], prefix="/v1/users")
+app.include_router(ClassesRouterV1, tags=["Classes"], prefix="/v1/classes")
+app.include_router(AssignmentRouterV1, tags=["Assignments"], prefix="/v1/assignments")
