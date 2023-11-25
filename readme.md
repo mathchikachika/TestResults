@@ -12,11 +12,7 @@ To set up and run the project, follow these steps:
    pip install -r requirements.txt
    ```
 3. Do not forget to add .env file - these are the environment variables you should have: 
-    Contact the owner for the following variables.
-   ```bash
-   MONGO_DETAILS = value
-   DB_NAME = value
-   ```
+    Contact the owner for the .env contents.
 2. Run the server using this following commands:
    ```bash
    python -m main.py
