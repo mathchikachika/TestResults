@@ -60,16 +60,13 @@ jobs:
             pip install -r requirements.txt   
             pip install --upgrade fastapi
             sudo apt-get install python3-tk
-            sudo apt-get update -y  
-            if [ ! -d "/src/" ]; then sudo mkdir -p "/src/"; fi             
-            if [ ! -d "/src/logs" ]; then sudo mkdir -p "/src/logs"; fi             
-            if [ -f "/src/logs/question.log" ]; then sudo touch "/src/logs/question.log"; fi          
+            sudo apt-get update -y                   
             sudo apt install npm -y
             sudo apt --fix-broken install 
             sudo apt install npm -y
             sudo apt update
             sudo apt install nodejs -y            
-            npm install -g allure-commandline --save-dev  -y
+            sudo npm install -g allure-commandline --save-dev  -y
             sudo apt install openjdk-19-jre-headless  -y    
                  
       - name: Start Web Server
@@ -99,33 +96,58 @@ jobs:
         id: Report_Details
         if: always()
         run: |
-          cd tests/MathWorldAPIReports          
-          rm -rf TestResults                    
+          cd tests/MathWorldAPIReports     
+          pwd     
+          rm -rf TestResults
+          echo 1
           git config --global init.defaultBranch main
+          echo 2
           git clone https://github.com/mathchikachika/TestResults.git
+          echo 3
           cd TestResults     
+          echo 4
           [ -f "index.html" ] && rm "index.html"
+          echo 5
           [ -f "pytest_html_report.html" ] && rm "pytest_html_report.html"  
+          echo 6
           [ -f "report.html" ] && rm "report.html"     
+          echo 7
           [ -f "output.json" ] && rm "output.json"  
+          echo 8
           [ -d "archive/" ] && [ -n "$(ls -A archive/)" ] && rm -r "archive/"   
+          echo 9
           [ -d "assets/" ] && [ -n "$(ls -A assets/)" ] && rm -r "assets/"    
+          echo 10
           cd .. 
+          pwd
           [ -f "index.html" ] && mv "index.html" "TestResults/"  
+          echo 12
           [ -f "pytest_html_report.html" ] && mv "pytest_html_report.html" "TestResults/"  
+          echo 13
           [ -f "report.html" ] && mv "report.html" "TestResults/"     
-          [ -f "output.json" ] && mv "output.json" "TestResults/" 
-          [ -f "../../src/logs/question.log" ] && cp "../../src/logs/question.log" "src/logs/"  
+          echo 14
+          [ -f "output.json" ] && mv "output.json" "TestResults/"           
+          echo 15
           if [ -d "assets" ] && [ "$(ls -A assets)" ]; then mv "assets" "TestResults/"; fi
+          echo 16
           if [ -d "archive" ] && [ "$(ls -A archive)" ]; then mv "archive" "TestResults/"; fi
+          echo 17
           cd TestResults
-          git config --global user.email "mathworldtesting@gmail.com"
+          pwd
+          git config --global user.email "mathworldtesting@outlook.com"
+          echo 19
           git config --global user.name "mathworldtesting"
-          git remote set-url origin https://mathworldtesting:${{secrets.YSH_PAT}}@github.com/mathchikachika/TestResults.git
+          echo 20
+          git remote set-url origin https://mathworldtesting:${{secrets.TESTRESULTS_PAT}}@github.com/mathchikachika/TestResults.git
+          echo 21
           git add .
+          echo 22
           git commit -m "Test Results Updated"
+          echo 23
           git push
+          echo 24
           git remote set-url origin https://github.com/mathchikachika/TestResults.git
+          echo 25
 
       - name: Successful Build Route
         uses: someimportantcompany/github-actions-slack-message@v1
